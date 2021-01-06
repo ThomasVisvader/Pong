@@ -1,13 +1,8 @@
 import sys
+import pygame.freetype
 import pygame
 import random
-import math
 from pygame.locals import *
-
-
-def start():
-    direction = random.randrange(45, 325)
-    return direction
 
 
 def left_score():
@@ -26,101 +21,39 @@ def right_score():
     ballMoving = False
 
 
-def change_direction(direction, case):
-    if case == 1:  # lopticka prichadza zhora
-        if 90 <= direction < 180:  # zlava
-            direction = 180 - direction
-        elif 180 <= direction < 270:  # zprava
-            alpha = direction - 180
-            direction = 360 - alpha
-    elif case == 2:  # lopticka prichadza zdola
-        if 0 <= direction < 90:  # zlava
-            direction = 180 - direction
-        elif 270 <= direction < 360:  # zprava
-            alpha = 360 - direction
-            direction = 180 + alpha
-    elif case == 3:  # lopticka prichadza k lavej paddle
-        if 180 <= direction < 270:  # zhora
-            alpha = direction - 180
-            direction = 180 - alpha
-        elif 270 <= direction < 360:  # zdola
-            direction = 360 - direction
-    elif case == 4:  # lopticka prichadza k pravej paddle
-        if 90 <= direction < 180:  # zhora
-            alpha = 180 - direction
-            direction = 180 + alpha
-        elif 0 <= direction < 90:  # zdola
-            direction = 360 - direction
-    return direction
-
-
-def ball_movement(direction, collision):
+def ball_movement(ball, collision):
     global ballx, bally
-    if ballx >= width-ballsize:
+    if ball.right >= width:
         left_score()
-    elif ballx <= 0:
+        ball.x = ballx
+        ball.y = bally
+    elif ball.left <= 0:
         right_score()
+        ball.x = ballx
+        ball.y = bally
     else:
         if collision == 0:  # odraz od steny
-            if bally >= height - ballsize:  # dolna stena
-                direction = change_direction(direction, 1)
-            elif bally <= 0:  # horna stena
-                direction = change_direction(direction, 2)
-        elif collision == 1:
-            direction = change_direction(direction, 3)
-        elif collision == 2:
-            direction = change_direction(direction, 1)
-        elif collision == 3:
-            direction = change_direction(direction, 2)
-        elif collision == 4:
-            direction = change_direction(direction, 4)
-        elif collision == 5:
-            direction = change_direction(direction, 1)
-        elif collision == 6:
-            direction = change_direction(direction, 2)
-        # elif collision == 1:  # odraz od paddle zboku
-        #     if ballx <= leftx + paddle_width:  # lava paddle
-        #         direction = change_direction(direction, 3)
-        #     elif ballx > rightx:  # prava paddle
-        #         direction = change_direction(direction, 4)
-        # elif collision == 2:  # odraz od paddle zhora/zdola
-        #     if (ballx <= leftx + paddle_width and bally == lefty) or \
-        #             (ballx > rightx and bally == righty):  # paddle zhora
-        #         direction = change_direction(direction, 1)
-        #     elif (ballx <= leftx + paddle_width and bally == lefty + paddle_height) or \
-        #             (ballx > rightx and bally == righty + paddle_height):  # paddle zdola
-        #         direction = change_direction(direction, 2)
-        ballx = ballx + (speed * math.sin(math.radians(direction)))
-        bally = bally - (speed * math.cos(math.radians(direction)))
-    return direction
+            if ball.top <= 0 or ball.bottom >= height:
+                bally *= -1
+        elif collision == 1:  # kolizia s paddle zboku
+            ballx *= -1
+        ball.x += ballx * speed
+        ball.y -= bally * speed
+    return ball
 
 
-def left_move_up():
-    global lefty
-    if lefty <= 0:
-        return
-    lefty -= speed
+def move_up(paddle):
+    if paddle.top <= 0:
+        return paddle
+    paddle.y -= 5
+    return paddle
 
 
-def left_move_down():
-    global lefty
-    if lefty >= 740:
-        return
-    lefty += speed
-
-
-def right_move_up():
-    global righty
-    if righty <= 0:
-        return
-    righty -= speed
-
-
-def right_move_down():
-    global righty
-    if righty >= 740:
-        return
-    righty += speed
+def move_down(paddle):
+    if paddle.bottom >= height:
+        return paddle
+    paddle.y += 5
+    return paddle
 
 
 pygame.init()
@@ -128,13 +61,10 @@ height = 795
 width = 1535
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Pong')
+font = pygame.freetype.Font('text/Cone.ttf', 150)
 
 FPS = 60
 fpsClock = pygame.time.Clock()
-
-ball = pygame.image.load('Ball.png')
-leftpaddle = pygame.image.load('left.png')
-rightpaddle = pygame.image.load('right.png')
 
 paddle_height = 55
 paddle_width = 41
@@ -145,7 +75,11 @@ rightx = 1354
 righty = 370
 ballx = 758
 bally = 388
-speed = 5
+speed = 10
+
+ball = pygame.Rect(ballx, bally, ballsize, ballsize)
+left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
+right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
 
 left_points = 0
 right_points = 0
@@ -181,46 +115,29 @@ while True:
                 rightMovingUp = True
             elif event.key == K_DOWN:
                 rightMovingDown = True
-            elif event.key == K_RETURN:
-                if not ballMoving:
-                    ballMoving = True
-                    direction = start()
+            if not ballMoving:
+                ballMoving = True
+                ballx = random.uniform(-1.0, 1.0)
+                bally = random.uniform(-1.0, 1.0)
     if ballMoving:
-        direction = ball_movement(direction, 0)
-    if leftMovingUp:
-        left_move_up()
-    elif leftMovingDown:
-        left_move_down()
-    if rightMovingUp:
-        right_move_up()
-    elif rightMovingDown:
-        right_move_down()
-    if leftx <= ballx <= leftx + paddle_width and lefty <= bally <= lefty + paddle_height:  # kolizia s lavou paddle
-        print('left')
-        if leftx + paddle_width - speed < ballx: # lava paddle zprava
-            direction = ball_movement(direction, 1)
-            print('left 1')
-        elif bally < lefty + speed:  # lava paddle zhora
-            direction = ball_movement(direction, 2)
-            print('left 2')
-        elif lefty + paddle_height - speed < bally:  # lava paddle zdola
-                # and leftx <= ballx - speed:
-            direction = ball_movement(direction, 3)
-            print('left 3')
-    elif rightx <= ballx <= rightx + paddle_width and righty <= bally <= righty + paddle_height: # kolizia s pravou paddle
-        print('right')
-        if ballx < rightx + speed:  # prava paddle zlava
-            direction = ball_movement(direction, 4)
-            print('right 4')
-        elif bally < righty + speed:  # prava paddle zhora
-            direction = ball_movement(direction, 5)
-            print('right 5')
-        elif righty + paddle_height - speed < bally:  # prava paddle zdola
-            # and ballx <= rightx + paddle_width:
-            direction = ball_movement(direction, 6)
-            print('right 6')
-    screen.blit(ball, (ballx, bally))
-    screen.blit(leftpaddle, (leftx, lefty))
-    screen.blit(rightpaddle, (rightx, righty))
+        ball = ball_movement(ball, 0)
+    if leftMovingUp and not leftMovingDown:
+        left_paddle = move_up(left_paddle)
+    elif leftMovingDown and not leftMovingUp:
+        left_paddle = move_down(left_paddle)
+    if rightMovingUp and not rightMovingDown:
+        right_paddle = move_up(right_paddle)
+    elif rightMovingDown and not rightMovingUp:
+        right_paddle = move_down(right_paddle)
+    if ball.colliderect(left_paddle):
+        ball = ball_movement(ball, 1)
+    elif ball.colliderect(right_paddle):
+        ball = ball_movement(ball, 1)
+    pygame.draw.rect(screen, (0, 153, 51), left_paddle)
+    pygame.draw.rect(screen, (153, 51, 153), right_paddle)
+    pygame.draw.rect(screen, (0, 0, 255), ball)
+    if not ballMoving:
+        font.render_to(screen, (700, 200), str(left_points), fgcolor=(0, 153, 51))
+        font.render_to(screen, (835, 200), str(right_points), fgcolor=(153, 51, 153))
     pygame.display.update()
     fpsClock.tick(FPS)
