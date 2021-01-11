@@ -2,6 +2,8 @@ import sys
 import pygame.freetype
 import pygame
 import random
+import heapq
+import ctypes
 from pygame.locals import *
 
 
@@ -112,38 +114,97 @@ def move_down(paddle):
     return paddle
 
 
-def intro(screen):
-    global introCount
-    # pixel = introCount * 10
+def background():
+    # TODO look at pixelArray and improve this
+    count = 0
     pixel = 0
-    red = 140
-    green = 115
-    blue = 0
-    for i in range(width):
-        # print(red, green, blue)
-        pygame.draw.rect(screen, (red, green, blue), (pixel, 0, 1, 25))
-        pygame.draw.rect(screen, (red, green, blue), (pixel, height-25, 1, 25))
-        pixel += 1
-        if pixel < 170 and green < 255:
-            green += 1
-        elif pixel < 340 and red > 0:
-            red -= 1
-        elif pixel < 510 and blue < 255:
-            blue += 1
-        elif pixel < 680 and green > 0:
-            green -= 1
-        elif pixel < 850 and red < 255:
-            red += 1
-        elif pixel < 1020 and blue > 0:
-            blue -= 1
-        elif green < 255:
-            green += 1
-    introCount += 1
+    for h in range(48, 333, 2):
+        red, green, blue = hsl_to_rgb(h, 0.13, 0.5)
+        pygame.draw.rect(screen, (red, green, blue), (pixel, 0, 4, 65))
+        pygame.draw.rect(screen, (red, green, blue), (pixel, height-65, 4, 65))
+        pixel += 4
+        red, green, blue = hsl_to_rgb(h + 1, 0.13, 0.5)
+        pygame.draw.rect(screen, (red, green, blue), (pixel, 0, 5, 65))
+        pygame.draw.rect(screen, (red, green, blue), (pixel, height - 65, 5, 65))
+        pixel += 5
+        count += 2
+    red, green, blue = hsl_to_rgb(334, 0.13, 0.5)
+    pygame.draw.rect(screen, (red, green, blue), (pixel, 0, 2, 65))
+    pygame.draw.rect(screen, (red, green, blue), (pixel, height - 65, 2, 65))
+    red, green, blue = hsl_to_rgb(180, 0.95, 0.5)
+    for i in range(15):
+        pygame.draw.rect(screen, (red, green, blue), (623, i * 68, 2, 34))
+    pixel = 0
+    for h in range(181, 188, 2):
+        red, green, blue = hsl_to_rgb(h, 0.95, 0.5)
+        for i in range(15):
+            pygame.draw.rect(screen, (red, green, blue), (625 + pixel, i * 68, 4, 34))
+        pixel += 4
+        red, green, blue = hsl_to_rgb(h + 1, 0.95, 0.5)
+        for i in range(15):
+            pygame.draw.rect(screen, (red, green, blue), (625 + pixel, i * 68, 5, 34))
+        pixel += 5
 
+
+def rgb_to_hsl(red, green, blue):
+    r = red / 255
+    g = green / 255
+    b = blue / 255
+    heap = [r, g, b]
+    heapq.heapify(heap)
+    min = heap[0]
+    max = heap[2]
+    delta = max - min
+    h = 0
+    if delta == 0:
+        h = 0
+    elif max == r:
+        h = (60 * ((g - b) / delta) + 360) % 360
+    elif max == g:
+        h = (60 * ((b - r) / delta) + 120) % 360
+    elif max == b:
+        h = (60 * ((r - g) / delta) + 240) % 360
+    return h
+
+
+def hsl_to_rgb(h, s, l):
+    c = (1 - abs(2 * l - 1)) * s
+    x = c * (1 - abs((h / 60) % 2 - 1))
+    m = l - c/2
+    r, g, b = 0, 0, 0
+    if 0 <= h < 60:
+        r = c
+        g = x
+        b = 0
+    elif 60 <= h < 120:
+        r = x
+        g = c
+        b = 0
+    elif 120 <= h < 180:
+        r = 0
+        g = c
+        b = x
+    elif 180 <= h < 240:
+        r = 0
+        g = x
+        b = c
+    elif 240 <= h < 300:
+        r = x
+        g = 0
+        b = c
+    elif 300 <= h < 360:
+        r = c
+        g = 0
+        b = x
+    red = (r + m) * 255
+    green = (g + m) * 255
+    blue = (b + m) * 255
+    return red, green, blue
 
 pygame.init()
-height = 768
-width = 1024
+ctypes.windll.user32.SetProcessDPIAware()
+height = 960
+width = 1280
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Pong')
 scoreFont = pygame.freetype.Font('text/pong-score.ttf', 150)
@@ -156,27 +217,19 @@ fpsClock = pygame.time.Clock()
 paddle_height = 55
 paddle_width = 41
 ballsize = 19
-leftx = 140
-lefty = 370
-rightx = 1354
-righty = 370
-ballx = 758
-bally = 388
+leftx = 100
+lefty = height // 2
+rightx = width - 100 - paddle_width
+righty = height // 2
+ballx = width // 2
+bally = height // 2
 paddle_speed = 10.0
 ball_speed = paddle_speed * 1.5
 
-startButton = pygame.Rect(700, 400, 200, 50)
-exitButton = pygame.Rect(700, 500, 200, 50)
-topWall = pygame.Rect(0, 0, width, 25)
-bottomWall = pygame.Rect(0, height-25, width, 25)
-# pygame.draw.rect(screen, (255, 255, 255), startButton)
-# pygame.draw.rect(screen, (255, 255, 255), exitButton)
-# pygame.draw.rect(screen, (255, 255, 255), topWall)
-# pygame.draw.rect(screen, (255, 255, 255), bottomWall)
-# titleFont.render_to(screen, (650, 200), 'PONG', fgcolor=(255, 255, 255))
-# textFont.render_to(screen, (760, 425), 'Start game', fgcolor=(0, 0, 0))
-# textFont.render_to(screen, (760, 525), 'Exit game', fgcolor=(0, 0, 0))
-
+startButton = pygame.Rect(width // 2 - 100, height // 2, 200, 50)
+exitButton = pygame.Rect(width // 2 - 100, height // 2 + 100, 200, 50)
+topWall = pygame.Rect(0, 0, width, 65)
+bottomWall = pygame.Rect(0, height-65, width, 65)
 ball = pygame.Rect(ballx, bally, ballsize, ballsize)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
 right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
@@ -191,23 +244,21 @@ rightMovingDown = False
 ballMoving = False
 gameStarted = False
 
-introCount = 0
-
 while True:
     if not gameStarted:
         mouse = pygame.mouse.get_pos()
         if startButton.collidepoint(mouse):
             pygame.draw.rect(screen, (128, 128, 128), startButton)
-            textFont.render_to(screen, (760, 425), 'Start game', fgcolor=(0, 0, 0))
+            textFont.render_to(screen, (startButton.x + 50, startButton.y + 20), 'Start game', fgcolor=(0, 0, 0))
         else:
             pygame.draw.rect(screen, (255, 255, 255), startButton)
-            textFont.render_to(screen, (760, 425), 'Start game', fgcolor=(0, 0, 0))
+            textFont.render_to(screen, (startButton.x + 50, startButton.y + 20), 'Start game', fgcolor=(0, 0, 0))
         if exitButton.collidepoint(mouse):
             pygame.draw.rect(screen, (128, 128, 128), exitButton)
-            textFont.render_to(screen, (760, 525), 'Exit game', fgcolor=(0, 0, 0))
+            textFont.render_to(screen, (exitButton.x + 50, exitButton.y + 20), 'Exit game', fgcolor=(0, 0, 0))
         else:
             pygame.draw.rect(screen, (255, 255, 255), exitButton)
-            textFont.render_to(screen, (760, 525), 'Exit game', fgcolor=(0, 0, 0))
+            textFont.render_to(screen, (exitButton.x + 50, exitButton.y + 20), 'Exit game', fgcolor=(0, 0, 0))
         for event in pygame.event.get():
             if event.type == MOUSEBUTTONUP:
                 if startButton.collidepoint(mouse):
@@ -220,38 +271,35 @@ while True:
                 sys.exit()
     elif gameStarted:
         screen.fill((0, 0, 0))
-        if introCount < FPS * 5000:
-            intro(screen)
-        else:
-            pygame.draw.rect(screen, (255, 255, 255), topWall)
-            pygame.draw.rect(screen, (255, 255, 255), bottomWall)
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    print('Left: {}, Right: {}'.format(left_points, right_points))
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == KEYUP:
-                    if event.key == K_w:
-                        leftMovingUp = False
-                    elif event.key == K_s:
-                        leftMovingDown = False
-                    elif event.key == K_UP:
-                        rightMovingUp = False
-                    elif event.key == K_DOWN:
-                        rightMovingDown = False
-                elif event.type == KEYDOWN:
-                    if event.key == K_w:
-                        leftMovingUp = True
-                    elif event.key == K_s:
-                        leftMovingDown = True
-                    elif event.key == K_UP:
-                        rightMovingUp = True
-                    elif event.key == K_DOWN:
-                        rightMovingDown = True
-                    if not ballMoving:
-                        ballMoving = True
-                        vx = round(random.uniform(-1.0, 1.0), 2)
-                        vy = round(random.uniform(-1.0, 1.0), 2)
+        pygame.draw.rect(screen, (255, 255, 255), topWall)
+        pygame.draw.rect(screen, (255, 255, 255), bottomWall)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                print('Left: {}, Right: {}'.format(left_points, right_points))
+                pygame.quit()
+                sys.exit()
+            elif event.type == KEYUP:
+                if event.key == K_w:
+                    leftMovingUp = False
+                elif event.key == K_s:
+                    leftMovingDown = False
+                elif event.key == K_UP:
+                    rightMovingUp = False
+                elif event.key == K_DOWN:
+                    rightMovingDown = False
+            elif event.type == KEYDOWN:
+                if event.key == K_w:
+                    leftMovingUp = True
+                elif event.key == K_s:
+                    leftMovingDown = True
+                elif event.key == K_UP:
+                    rightMovingUp = True
+                elif event.key == K_DOWN:
+                    rightMovingDown = True
+                if not ballMoving:
+                    ballMoving = True
+                    vx = round(random.uniform(-1.0, 1.0), 2)
+                    vy = round(random.uniform(-1.0, 1.0), 2)
         if ballMoving:
             ball = ball_movement(ball, 0)
         if leftMovingUp and not leftMovingDown:
@@ -269,9 +317,10 @@ while True:
         pygame.draw.rect(screen, (0, 153, 51), left_paddle)
         pygame.draw.rect(screen, (153, 51, 153), right_paddle)
         pygame.draw.rect(screen, (0, 0, 255), ball)
+        background()
         if not ballMoving:
-            scoreFont.render_to(screen, (700, 200), str(left_points), fgcolor=(0, 153, 51))
-            scoreFont.render_to(screen, (835, 200), str(right_points), fgcolor=(153, 51, 153))
+            scoreFont.render_to(screen, (width // 2 - 100, 200), str(left_points), fgcolor=(0, 153, 51))
+            scoreFont.render_to(screen, (width // 2 + 100, 200), str(right_points), fgcolor=(153, 51, 153))
     if ballMoving:
         textFont.render_to(screen, (100, 30), str(ball.x), fgcolor=(255, 255, 255))
         textFont.render_to(screen, (100, 50), str(ball.y), fgcolor=(255, 255, 255))
