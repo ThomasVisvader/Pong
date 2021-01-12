@@ -256,14 +256,78 @@ def color(obj):
         x += 5
 
 
+def write_score():
+    if left_points < 10:
+        if left_points == 1:
+            scoreFont.render_to(screen, (365, 140), str(left_points), fgcolor=(255, 255, 255))
+            color_score(365, 140)
+        else:
+            scoreFont.render_to(screen, (260, 140), str(left_points), fgcolor=(255, 255, 255))
+            color_score(260, 140)
+    else:
+        scoreFont.render_to(screen, (140, 140), '1', fgcolor=(255, 255, 255))
+        color_score(140, 140)
+        if left_points - 10 == 1:
+            scoreFont.render_to(screen, (365, 140), str(left_points - 10), fgcolor=(255, 255, 255))
+            color_score(365, 140)
+        else:
+            scoreFont.render_to(screen, (260, 140), str(left_points - 10), fgcolor=(255, 255, 255))
+            color_score(260, 140)
+    if right_points < 10:
+        if right_points == 1:
+            scoreFont.render_to(screen, (1085, 140), str(right_points), fgcolor=(255, 255, 255))
+            color_score(1085, 140)
+        else:
+            scoreFont.render_to(screen, (980, 140), str(right_points), fgcolor=(255, 255, 255))
+            color_score(980, 140)
+    else:
+        scoreFont.render_to(screen, (860, 140), '1', fgcolor=(255, 255, 255))
+        color_score(860, 140)
+        if right_points - 10 == 1:
+            scoreFont.render_to(screen, (1085, 140), str(right_points - 10), fgcolor=(255, 255, 255))
+            color_score(1085, 140)
+        else:
+            scoreFont.render_to(screen, (980, 140), str(right_points - 10), fgcolor=(255, 255, 255))
+            color_score(980, 140)
+
+
+def color_score(x, y):
+    p = pygame.PixelArray(screen)
+    for j in range(y, y + 253):
+        for i in range(x, x + 145):
+            if p[i][j] == screen.map_rgb((255, 255, 255)):
+                red, green, blue = get_pixel_color(i)
+                p[i][j] = (red, green, blue)
+    del p
+    return 0
+
+
+def get_pixel_color(x):
+    block = x // 9
+    offset = x % 9
+    h = 54 + block * 2
+    if offset >= 4:
+        h += 1
+    red, green, blue = hsl_to_rgb(h, 0.95, 0.5)
+    return red, green, blue
+
+
+def restart():
+    screen.fill((0, 0, 0))
+    global left_points, right_points, gameStarted
+    left_points = 0
+    right_points = 0
+    gameStarted = False
+
+
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()
 height = 960
 width = 1280
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Pong')
-scoreFont = pygame.freetype.Font('text/pong-score.ttf', 150)
-titleFont = pygame.freetype.Font('text/Cone.ttf', 150)
+scoreFont = pygame.freetype.Font('text/Cone.ttf', 420)
+titleFont = pygame.freetype.Font('text/Cone.ttf', 270)
 textFont = pygame.freetype.Font('text/Cone.ttf', 25)
 
 FPS = 60
@@ -302,7 +366,7 @@ gameStarted = False
 
 while True:
     if not gameStarted:
-        titleFont.render_to(screen, (490, 300), 'PONG', fgcolor=(255, 255, 255))
+        titleFont.render_to(screen, (400, 200), 'PONG', fgcolor=(255, 255, 255))
         mouse = pygame.mouse.get_pos()
         if startButton.collidepoint(mouse):
             pygame.draw.rect(screen, (128, 128, 128), startButton)
@@ -379,8 +443,10 @@ while True:
         pygame.draw.rect(screen, (255, 255, 255), ball)
         color(ball)
         if not ballMoving:
-            scoreFont.render_to(screen, (width // 2 - 100, 200), str(left_points), fgcolor=(0, 153, 51))
-            scoreFont.render_to(screen, (width // 2 + 100, 200), str(right_points), fgcolor=(153, 51, 153))
+            if left_points == 15 or right_points == 15:
+                restart()
+            else:
+                write_score()
     if ballMoving:
         textFont.render_to(screen, (100, 30), str(ball.x), fgcolor=(255, 255, 255))
         textFont.render_to(screen, (100, 50), str(ball.y), fgcolor=(255, 255, 255))
