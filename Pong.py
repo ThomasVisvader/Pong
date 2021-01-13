@@ -114,6 +114,22 @@ def move_down(paddle):
     return paddle
 
 
+def draw_net():
+    red, green, blue = hsl_to_rgb(192, 0.95, 0.5)
+    for i in range(15):
+        pygame.draw.rect(screen, (red, green, blue), (623, i * 68, 3, 34))
+    pixel = 0
+    for h in range(193, 199, 2):
+        red, green, blue = hsl_to_rgb(h, 0.95, 0.5)
+        for i in range(15):
+            pygame.draw.rect(screen, (red, green, blue), (625 + pixel, i * 68, 4, 34))
+        pixel += 4
+        red, green, blue = hsl_to_rgb(h + 1, 0.95, 0.5)
+        for i in range(15):
+            pygame.draw.rect(screen, (red, green, blue), (625 + pixel, i * 68, 5, 34))
+        pixel += 5
+
+
 def background():
     pixels = pygame.PixelArray(screen)
     count = 0
@@ -131,19 +147,7 @@ def background():
     red, green, blue = hsl_to_rgb(334, 0.13, 0.5)
     pygame.draw.rect(screen, (red, green, blue), (pixel, 0, 2, 65))
     pygame.draw.rect(screen, (red, green, blue), (pixel, height - 65, 2, 65))
-    red, green, blue = hsl_to_rgb(192, 0.95, 0.5)
-    for i in range(15):
-        pygame.draw.rect(screen, (red, green, blue), (623, i * 68, 3, 34))
-    pixel = 0
-    for h in range(193, 199, 2):
-        red, green, blue = hsl_to_rgb(h, 0.95, 0.5)
-        for i in range(15):
-            pygame.draw.rect(screen, (red, green, blue), (625 + pixel, i * 68, 4, 34))
-        pixel += 4
-        red, green, blue = hsl_to_rgb(h + 1, 0.95, 0.5)
-        for i in range(15):
-            pygame.draw.rect(screen, (red, green, blue), (625 + pixel, i * 68, 5, 34))
-        pixel += 5
+    draw_net()
 
 
 def rgb_to_hsl(red, green, blue):
@@ -257,45 +261,47 @@ def color(obj):
 
 
 def write_score():
+    score_screen.fill((0, 0, 0))
     if left_points < 10:
         if left_points == 1:
-            scoreFont.render_to(screen, (365, 140), str(left_points), fgcolor=(255, 255, 255))
-            color_score(365, 140)
+            scoreFont.render_to(score_screen, (365, 0), str(left_points), fgcolor=(255, 255, 255))
+            color_score(365, 0)
         else:
-            scoreFont.render_to(screen, (260, 140), str(left_points), fgcolor=(255, 255, 255))
-            color_score(260, 140)
+            scoreFont.render_to(score_screen, (260, 0), str(left_points), fgcolor=(255, 255, 255))
+            color_score(260, 0)
     else:
-        scoreFont.render_to(screen, (140, 140), '1', fgcolor=(255, 255, 255))
-        color_score(140, 140)
+        scoreFont.render_to(score_screen, (140, 0), '1', fgcolor=(255, 255, 255))
+        color_score(140, 0)
         if left_points - 10 == 1:
-            scoreFont.render_to(screen, (365, 140), str(left_points - 10), fgcolor=(255, 255, 255))
-            color_score(365, 140)
+            scoreFont.render_to(score_screen, (365, 0), str(left_points - 10), fgcolor=(255, 255, 255))
+            color_score(365, 0)
         else:
-            scoreFont.render_to(screen, (260, 140), str(left_points - 10), fgcolor=(255, 255, 255))
-            color_score(260, 140)
+            scoreFont.render_to(score_screen, (260, 0), str(left_points - 10), fgcolor=(255, 255, 255))
+            color_score(260, 0)
     if right_points < 10:
         if right_points == 1:
-            scoreFont.render_to(screen, (1085, 140), str(right_points), fgcolor=(255, 255, 255))
-            color_score(1085, 140)
+            scoreFont.render_to(score_screen, (1085, 0), str(right_points), fgcolor=(255, 255, 255))
+            color_score(1085, 0)
         else:
-            scoreFont.render_to(screen, (980, 140), str(right_points), fgcolor=(255, 255, 255))
-            color_score(980, 140)
+            scoreFont.render_to(score_screen, (980, 0), str(right_points), fgcolor=(255, 255, 255))
+            color_score(980, 0)
     else:
-        scoreFont.render_to(screen, (860, 140), '1', fgcolor=(255, 255, 255))
-        color_score(860, 140)
+        scoreFont.render_to(score_screen, (860, 0), '1', fgcolor=(255, 255, 255))
+        color_score(860, 0)
         if right_points - 10 == 1:
-            scoreFont.render_to(screen, (1085, 140), str(right_points - 10), fgcolor=(255, 255, 255))
-            color_score(1085, 140)
+            scoreFont.render_to(score_screen, (1085, 0), str(right_points - 10), fgcolor=(255, 255, 255))
+            color_score(1085, 0)
         else:
-            scoreFont.render_to(screen, (980, 140), str(right_points - 10), fgcolor=(255, 255, 255))
-            color_score(980, 140)
+            scoreFont.render_to(score_screen, (980, 0), str(right_points - 10), fgcolor=(255, 255, 255))
+            color_score(980, 0)
+    screen.blit(score_screen, (0, 140))
 
 
 def color_score(x, y):
-    p = pygame.PixelArray(screen)
+    p = pygame.PixelArray(score_screen)
     for j in range(y, y + 253):
         for i in range(x, x + 145):
-            if p[i][j] == screen.map_rgb((255, 255, 255)):
+            if p[i][j] == score_screen.map_rgb((255, 255, 255)):
                 red, green, blue = get_pixel_color(i)
                 p[i][j] = (red, green, blue)
     del p
@@ -320,11 +326,33 @@ def restart():
     gameStarted = False
 
 
+def intro():
+    pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, 140))
+    pygame.draw.rect(screen, (0, 0, 0), (0, 390, width, height - 390))
+    background()
+    global shortBlock, longBlock
+    for i in range(8):
+        for j in range(12):
+            pygame.draw.rect(screen, (0, 0, 0), shortBlock)
+            color(shortBlock)
+            shortBlock.x += 120
+        shortBlock.x -= 120*12
+        shortBlock.y += 140
+    shortBlock.y -= 140*8
+    if shortBlock.x >= 60:
+        shortBlock.x = -60
+    if shortBlock.y >= 80:
+        shortBlock.y = -60
+    screen.blit(score_screen, (0, 140))
+
+
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()
 height = 960
 width = 1280
 screen = pygame.display.set_mode((width, height))
+score_screen = pygame.Surface((width, 255))
+intro_screen = pygame.Surface((width, height))
 pygame.display.set_caption('Pong')
 scoreFont = pygame.freetype.Font('text/Cone.ttf', 420)
 titleFont = pygame.freetype.Font('text/Cone.ttf', 270)
@@ -354,8 +382,8 @@ ball.center = (ballx, bally)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
 right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
 
-left_points = 0
-right_points = 0
+left_points = 13
+right_points = 13
 
 leftMovingUp = False
 leftMovingDown = False
@@ -364,29 +392,45 @@ rightMovingDown = False
 ballMoving = False
 gameStarted = False
 
+longBlock = pygame.Rect(0, 0, 60, 110)
+shortBlock = pygame.Rect(0, 140, 60, 60)
+
+write_score()
 while True:
     if not gameStarted:
-        titleFont.render_to(screen, (400, 200), 'PONG', fgcolor=(255, 255, 255))
-        mouse = pygame.mouse.get_pos()
-        if startButton.collidepoint(mouse):
-            pygame.draw.rect(screen, (128, 128, 128), startButton)
-            textFont.render_to(screen, (startButton.x + 55, startButton.y + 20), 'Start game', fgcolor=(0, 0, 0))
-        else:
-            pygame.draw.rect(screen, (255, 255, 255), startButton)
-            textFont.render_to(screen, (startButton.x + 55, startButton.y + 20), 'Start game', fgcolor=(0, 0, 0))
-        if exitButton.collidepoint(mouse):
-            pygame.draw.rect(screen, (128, 128, 128), exitButton)
-            textFont.render_to(screen, (exitButton.x + 60, exitButton.y + 20), 'Exit game', fgcolor=(0, 0, 0))
-        else:
-            pygame.draw.rect(screen, (255, 255, 255), exitButton)
-            textFont.render_to(screen, (exitButton.x + 60, exitButton.y + 20), 'Exit game', fgcolor=(0, 0, 0))
+        intro()
+        pygame.draw.rect(screen, (255, 255, 255), left_paddle)
+        color(left_paddle)
+        pygame.draw.rect(screen, (255, 255, 255), right_paddle)
+        color(right_paddle)
+        pygame.draw.rect(screen, (255, 255, 255), ball)
+        color(ball)
+        shortBlock.x += 5
+        shortBlock.y += 5
+        # titleFont.render_to(screen, (400, 200), 'PONG', fgcolor=(255, 255, 255))
+        # mouse = pygame.mouse.get_pos()
+        # if startButton.collidepoint(mouse):
+        #     pygame.draw.rect(screen, (128, 128, 128), startButton)
+        #     textFont.render_to(screen, (startButton.x + 55, startButton.y + 20), 'Start game', fgcolor=(0, 0, 0))
+        # else:
+        #     pygame.draw.rect(screen, (255, 255, 255), startButton)
+        #     textFont.render_to(screen, (startButton.x + 55, startButton.y + 20), 'Start game', fgcolor=(0, 0, 0))
+        # if exitButton.collidepoint(mouse):
+        #     pygame.draw.rect(screen, (128, 128, 128), exitButton)
+        #     textFont.render_to(screen, (exitButton.x + 60, exitButton.y + 20), 'Exit game', fgcolor=(0, 0, 0))
+        # else:
+        #     pygame.draw.rect(screen, (255, 255, 255), exitButton)
+        #     textFont.render_to(screen, (exitButton.x + 60, exitButton.y + 20), 'Exit game', fgcolor=(0, 0, 0))
         for event in pygame.event.get():
-            if event.type == MOUSEBUTTONUP:
-                if startButton.collidepoint(mouse):
+            if event.type == KEYUP:
+                if event.key == K_RETURN:
                     gameStarted = True
-                elif exitButton.collidepoint(mouse):
-                    pygame.quit()
-                    sys.exit()
+            # if event.type == MOUSEBUTTONUP:
+            #     if startButton.collidepoint(mouse):
+            #         gameStarted = True
+            #     elif exitButton.collidepoint(mouse):
+            #         pygame.quit()
+            #         sys.exit()
             elif event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -435,6 +479,10 @@ while True:
             ball = ball_movement(ball, 1)
         elif ball.colliderect(right_paddle):
             ball = ball_movement(ball, 2)
+        if not ballMoving:
+            write_score()
+            if left_points == 15 or right_points == 15:
+                restart()
         background()
         pygame.draw.rect(screen, (255, 255, 255), left_paddle)
         color(left_paddle)
@@ -442,11 +490,6 @@ while True:
         color(right_paddle)
         pygame.draw.rect(screen, (255, 255, 255), ball)
         color(ball)
-        if not ballMoving:
-            if left_points == 15 or right_points == 15:
-                restart()
-            else:
-                write_score()
     if ballMoving:
         textFont.render_to(screen, (100, 30), str(ball.x), fgcolor=(255, 255, 255))
         textFont.render_to(screen, (100, 50), str(ball.y), fgcolor=(255, 255, 255))
