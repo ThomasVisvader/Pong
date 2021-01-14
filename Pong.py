@@ -330,20 +330,33 @@ def intro():
     pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, 140))
     pygame.draw.rect(screen, (0, 0, 0), (0, 390, width, height - 390))
     background()
-    global shortBlock, longBlock
-    for i in range(8):
-        for j in range(12):
-            pygame.draw.rect(screen, (0, 0, 0), shortBlock)
-            color(shortBlock)
-            shortBlock.x += 120
-        shortBlock.x -= 120*12
-        shortBlock.y += 140
-    shortBlock.y -= 140*8
-    if shortBlock.x >= 60:
-        shortBlock.x = -60
-    if shortBlock.y >= 80:
-        shortBlock.y = -60
+    global blocks, introMovingUp
+    for block in blocks:
+        line_animation(block)
+        if introMovingUp:
+            block.y -= 5
+        else:
+            block.y += 5
+        block.x += 3
+    if (blocks[1].y + 110 == height and not introMovingUp) or \
+            (blocks[1].y == 60 and introMovingUp):
+        introMovingUp = bool(random.getrandbits(1))
     screen.blit(score_screen, (0, 140))
+    draw_net()
+
+
+def line_animation(block):
+    for j in range(12):
+        pygame.draw.rect(screen, (0, 0, 0), block)
+        color(block)
+        block.x += 120
+    block.x -= 120 * 12
+    if block.x >= 60:
+        block.x = -60
+    if not introMovingUp and block.y >= height + 80:
+        block.y = -120
+    elif introMovingUp and block.y <= -80:
+        block.y = height + 120
 
 
 pygame.init()
@@ -382,8 +395,8 @@ ball.center = (ballx, bally)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
 right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
 
-left_points = 13
-right_points = 13
+left_points = 0
+right_points = 0
 
 leftMovingUp = False
 leftMovingDown = False
@@ -392,12 +405,18 @@ rightMovingDown = False
 ballMoving = False
 gameStarted = False
 
-longBlock = pygame.Rect(0, 0, 60, 110)
-shortBlock = pygame.Rect(0, 140, 60, 60)
+introMovingUp = False
+
+blocks = []
+blocks.append(pygame.Rect(0, -60, 60, 60))
+blocks.append(pygame.Rect(0, 80, 60, 110))
+for i in range(6):
+    blocks.append(pygame.Rect(0, 270 + (i*140), 60, 60))
 
 write_score()
 while True:
     if not gameStarted:
+        FPS = 150
         intro()
         pygame.draw.rect(screen, (255, 255, 255), left_paddle)
         color(left_paddle)
@@ -405,8 +424,8 @@ while True:
         color(right_paddle)
         pygame.draw.rect(screen, (255, 255, 255), ball)
         color(ball)
-        shortBlock.x += 5
-        shortBlock.y += 5
+        # longBlock.x += 5
+        # longBlock.y += 5
         # titleFont.render_to(screen, (400, 200), 'PONG', fgcolor=(255, 255, 255))
         # mouse = pygame.mouse.get_pos()
         # if startButton.collidepoint(mouse):
@@ -435,6 +454,7 @@ while True:
                 pygame.quit()
                 sys.exit()
     elif gameStarted:
+        FPS = 60
         screen.fill((0, 0, 0))
         pygame.draw.rect(screen, (255, 255, 255), topWall)
         pygame.draw.rect(screen, (255, 255, 255), bottomWall)
