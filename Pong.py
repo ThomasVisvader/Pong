@@ -326,7 +326,7 @@ def restart():
     gameStarted = False
 
 
-def intro():
+def intro(yspeed):
     pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, 140))
     pygame.draw.rect(screen, (0, 0, 0), (0, 390, width, height - 390))
     background()
@@ -334,9 +334,9 @@ def intro():
     for block in blocks:
         line_animation(block)
         if introMovingUp:
-            block.y -= 5
+            block.y -= yspeed
         else:
-            block.y += 5
+            block.y += yspeed
         block.x += 3
     if (blocks[1].y + 110 == height and not introMovingUp) or \
             (blocks[1].y == 60 and introMovingUp):
@@ -406,6 +406,7 @@ ballMoving = False
 gameStarted = False
 
 introMovingUp = False
+chosen = False
 
 blocks = []
 blocks.append(pygame.Rect(0, -60, 60, 60))
@@ -416,14 +417,18 @@ for i in range(6):
 write_score()
 while True:
     if not gameStarted:
-        FPS = 150
-        intro()
-        pygame.draw.rect(screen, (255, 255, 255), left_paddle)
-        color(left_paddle)
-        pygame.draw.rect(screen, (255, 255, 255), right_paddle)
-        color(right_paddle)
-        pygame.draw.rect(screen, (255, 255, 255), ball)
-        color(ball)
+        if not chosen:
+            FPS = random.choice([60, 90, 120, 150])
+            yspeed = random.choice([1, 2, 5, 10])
+            chosen = True
+        else:
+            intro(yspeed)
+            pygame.draw.rect(screen, (255, 255, 255), left_paddle)
+            color(left_paddle)
+            pygame.draw.rect(screen, (255, 255, 255), right_paddle)
+            color(right_paddle)
+            pygame.draw.rect(screen, (255, 255, 255), ball)
+            color(ball)
         # longBlock.x += 5
         # longBlock.y += 5
         # titleFont.render_to(screen, (400, 200), 'PONG', fgcolor=(255, 255, 255))
@@ -454,6 +459,7 @@ while True:
                 pygame.quit()
                 sys.exit()
     elif gameStarted:
+        chosen = False
         FPS = 60
         screen.fill((0, 0, 0))
         pygame.draw.rect(screen, (255, 255, 255), topWall)
