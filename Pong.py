@@ -4,127 +4,112 @@ import pygame
 import random
 import heapq
 import ctypes
+import math
 from pygame.locals import *
 
 
 def left_score():
-    global left_points, vx, vy, ballMoving
+    global left_points, ballMoving, ball_speed
     left_points += 1
-    vx = 758
-    vy = 388
     ballMoving = False
+    ball_speed = 10.0
     score_sound.play()
 
 
 def right_score():
-    global right_points, vx, vy, ballMoving
+    global right_points, ballMoving, ball_speed
     right_points += 1
-    vx = 758
-    vy = 388
     ballMoving = False
+    ball_speed = 10.0
     score_sound.play()
 
 
-def ball_movement(ball, collision):
+def paddle_collision(ball, paddle):
+    global vx, vy, ball_speed
+    alpha = 75
+    c_point = ball.center[1] - paddle.center[1]
+    c_point = c_point / (paddle_height / 2)
+    if c_point < -1:
+        c_point = -1
+    elif c_point > 1:
+        c_point = 1
+    angle = c_point * alpha
+    if paddle == left_paddle:
+        ball.left = paddle.right
+        if angle == 0:
+            direction = 0
+        elif angle < 0:
+            direction = 360 - alpha
+        else:
+            direction = alpha
+    else:
+        ball.right = paddle.left
+        if angle == 0:
+            direction = 180
+        else:
+            direction = 180 - alpha
+    ball_speed += 1
+    vx = ball_speed * math.cos(math.radians(direction))
+    vy = ball_speed * math.sin(math.radians(direction))
+    ball.x += vx
+    ball.y += vy
+    hit_sound.play()
+    return ball
+
+# alpha = max relative angle
+# relative angle = c_point * alpha
+# actual angle :
+# if left_paddle:
+#   if relative angle == 0:
+#       actual angle = 0
+#   elif relative angle < 0:
+#       actual angle = 360 - alpha
+#   else:
+#       actual angle = relative angle
+# elif right_paddle:
+#   if relative angle == 0:
+#       actual angle = 180
+#   elif relative angle < 0:
+#       actual angle = 180 - relative angle
+#   else:
+#       actual angle = 180 - relative angle
+
+
+def ball_movement(ball):
     global vx, vy
     if ball.right >= width:
         left_score()
-        ball.x = vx
-        ball.y = vy
+        ball.x = width // 2
+        ball.y = height // 2
     elif ball.left <= 0:
         right_score()
-        ball.x = vx
-        ball.y = vy
+        ball.x = width // 2
+        ball.y = height // 2
     else:
-        if collision == 0:  # odraz od steny
-            if ball.top <= 0:
-                ball.y += ball_speed
-                vy *= -1
-                hit_sound.play()
-            elif ball.bottom >= height:
-                vy *= -1
-                ball.y -= ball_speed
-                hit_sound.play()
-        elif collision == 1:  # kolizia s ľavou paddle
-            if left_paddle.topright[0] - ball_speed < ball.x < left_paddle.topright[0]:  # biely obdlznik
-                if left_paddle.topright[1] + ball_speed < ball.y < left_paddle.bottomright[1] - ball_speed:  # rohy
-                    ball.x += ball_speed
-                    vx *= -1
-                    hit_sound.play()
-                else:  # hore alebo dole
-                    if leftMovingUp:
-                        # vx *= -1
-                        if vy > 0:
-                            vy *= -1
-                            hit_sound.play()
-                    elif leftMovingDown:
-                        # vx *= -1
-                        if vy < 0:
-                            vy *= -1
-                            hit_sound.play()
-                    else:
-                        vy *= -1
-                        hit_sound.play()
-            else:
-                if leftMovingUp:
-                    ball.y -= ball_speed
-                    # vx *= -1
-                    if vy > 0:
-                        vy *= -1
-                        hit_sound.play()
-                elif leftMovingDown:
-                    ball.y += ball_speed
-                    # vx *= -1
-                    if vy < 0:
-                        vy *= -1
-                        hit_sound.play()
-        elif collision == 2:  # kolizia s pravou paddle
-            if right_paddle.topleft[0] < ball.x < right_paddle.topleft[0] + ball_speed:
-                if right_paddle.topleft[1] + ball_speed < ball.y < right_paddle.bottomleft[1] - ball_speed:
-                    ball.x -= ball_speed
-                    vx *= -1
-                    hit_sound.play()
-                else:
-                    if rightMovingUp:
-                        # vx *= -1
-                        if vy > 0:
-                            vy *= -1
-                            hit_sound.play()
-                    elif rightMovingDown:
-                        # vx *= -1
-                        if vy < 0:
-                            vy *= -1
-                            hit_sound.play()
-                    else:
-                        vy *= -1
-                        hit_sound.play()
-            else:
-                if rightMovingUp:
-                    ball.y -= ball_speed
-                    # vx *= -1
-                    if vy > 0:
-                        vy *= -1
-                        hit_sound.play()
-                elif rightMovingDown:
-                    ball.y += ball_speed
-                    # vx *= -1
-                    if vy < 0:
-                        vy *= -1
-                        hit_sound.play()
-        ball.x += vx * ball_speed
-        ball.y += vy * ball_speed
+        if ball.top <= 65:
+            ball.top = 65
+            vy *= -1
+            hit_sound.play()
+        elif ball.bottom >= height - 65:
+            ball.bottom = height - 65
+            vy *= -1
+            hit_sound.play()
+        ball.x += vx
+        ball.y += vy
     return ball
 
 
 def move_up(paddle):
-    if paddle.top <= 0:
+    if paddle.top <= 65:
+        paddle.top = 65
         return paddle
     paddle.y -= paddle_speed
     return paddle
 
 
 def move_down(paddle):
-    if paddle.bottom >= height:
+    if paddle.bottom >= height - 65:
+        paddle.bottom = height - 65
         return paddle
     paddle.y += paddle_speed
     return paddle
@@ -147,7 +132,6 @@ def draw_net():
 
 
 def background():
-    pixels = pygame.PixelArray(screen)
     count = 0
     pixel = 0
     for h in range(54, 338, 2):
@@ -403,7 +387,7 @@ righty = height // 2
 ballx = width // 2
 bally = height // 2
 paddle_speed = 10.0
-ball_speed = paddle_speed * 1.5
+ball_speed = 10.0
 
 startButton = pygame.Rect(width // 2 - 100, height // 2, 200, 50)
 exitButton = pygame.Rect(width // 2 - 100, height // 2 + 100, 200, 50)
@@ -508,11 +492,12 @@ while True:
                     rightMovingDown = True
                 if not ballMoving:
                     ballMoving = True
-                    vx = round(random.uniform(-1.0, 1.0), 2)
-                    vy = round(random.uniform(-1.0, 1.0), 2)
+                    direction = random.randint(0, 360)
+                    vx = ball_speed * math.cos(math.radians(direction))
+                    vy = ball_speed * math.sin(math.radians(direction))
                     spawn_sound.play()
         if ballMoving:
-            ball = ball_movement(ball, 0)
+            ball = ball_movement(ball)
         if leftMovingUp and not leftMovingDown:
             left_paddle = move_up(left_paddle)
         elif leftMovingDown and not leftMovingUp:
@@ -522,9 +507,9 @@ while True:
         elif rightMovingDown and not rightMovingUp:
             right_paddle = move_down(right_paddle)
         if ball.colliderect(left_paddle):
-            ball = ball_movement(ball, 1)
+            ball = paddle_collision(ball, left_paddle)
         elif ball.colliderect(right_paddle):
-            ball = ball_movement(ball, 2)
+            ball = paddle_collision(ball, right_paddle)
         if not ballMoving:
             write_score()
             if left_points == 15 or right_points == 15:
@@ -537,9 +522,11 @@ while True:
         pygame.draw.rect(screen, (255, 255, 255), ball)
         color(ball)
     if ballMoving:
+        v = math.sqrt(math.pow(vx, 2) + math.pow(vy, 2))
         textFont.render_to(screen, (100, 30), str(ball.x), fgcolor=(255, 255, 255))
         textFont.render_to(screen, (100, 50), str(ball.y), fgcolor=(255, 255, 255))
-        textFont.render_to(screen, (100, 70), str(vx), fgcolor=(255, 255, 255))
-        textFont.render_to(screen, (100, 100), str(vy), fgcolor=(255, 255, 255))
+        textFont.render_to(screen, (100, 90), str(vx), fgcolor=(255, 255, 255))
+        textFont.render_to(screen, (100, 110), str(vy), fgcolor=(255, 255, 255))
+        textFont.render_to(screen, (100, 130), str(v), fgcolor=(255, 255, 255))
     pygame.display.update()
     fpsClock.tick(FPS)
