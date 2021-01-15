@@ -13,6 +13,7 @@ def left_score():
     vx = 758
     vy = 388
     ballMoving = False
+    score_sound.play()
 
 
 def right_score():
@@ -21,6 +22,7 @@ def right_score():
     vx = 758
     vy = 388
     ballMoving = False
+    score_sound.play()
 
 
 def ball_movement(ball, collision):
@@ -38,63 +40,77 @@ def ball_movement(ball, collision):
             if ball.top <= 0:
                 ball.y += ball_speed
                 vy *= -1
+                hit_sound.play()
             elif ball.bottom >= height:
                 vy *= -1
                 ball.y -= ball_speed
+                hit_sound.play()
         elif collision == 1:  # kolizia s ľavou paddle
             if left_paddle.topright[0] - ball_speed < ball.x < left_paddle.topright[0]:  # biely obdlznik
                 if left_paddle.topright[1] + ball_speed < ball.y < left_paddle.bottomright[1] - ball_speed:  # rohy
                     ball.x += ball_speed
                     vx *= -1
+                    hit_sound.play()
                 else:  # hore alebo dole
                     if leftMovingUp:
                         # vx *= -1
                         if vy > 0:
                             vy *= -1
+                            hit_sound.play()
                     elif leftMovingDown:
                         # vx *= -1
                         if vy < 0:
                             vy *= -1
+                            hit_sound.play()
                     else:
                         vy *= -1
+                        hit_sound.play()
             else:
                 if leftMovingUp:
                     ball.y -= ball_speed
                     # vx *= -1
                     if vy > 0:
                         vy *= -1
+                        hit_sound.play()
                 elif leftMovingDown:
                     ball.y += ball_speed
                     # vx *= -1
                     if vy < 0:
                         vy *= -1
+                        hit_sound.play()
         elif collision == 2:  # kolizia s pravou paddle
             if right_paddle.topleft[0] < ball.x < right_paddle.topleft[0] + ball_speed:
                 if right_paddle.topleft[1] + ball_speed < ball.y < right_paddle.bottomleft[1] - ball_speed:
                     ball.x -= ball_speed
                     vx *= -1
+                    hit_sound.play()
                 else:
                     if rightMovingUp:
                         # vx *= -1
                         if vy > 0:
                             vy *= -1
+                            hit_sound.play()
                     elif rightMovingDown:
                         # vx *= -1
                         if vy < 0:
                             vy *= -1
+                            hit_sound.play()
                     else:
                         vy *= -1
+                        hit_sound.play()
             else:
                 if rightMovingUp:
                     ball.y -= ball_speed
                     # vx *= -1
                     if vy > 0:
                         vy *= -1
+                        hit_sound.play()
                 elif rightMovingDown:
                     ball.y += ball_speed
                     # vx *= -1
                     if vy < 0:
                         vy *= -1
+                        hit_sound.play()
         ball.x += vx * ball_speed
         ball.y += vy * ball_speed
     return ball
@@ -370,6 +386,9 @@ pygame.display.set_caption('Pong')
 scoreFont = pygame.freetype.Font('text/Cone.ttf', 420)
 titleFont = pygame.freetype.Font('text/Cone.ttf', 270)
 textFont = pygame.freetype.Font('text/Cone.ttf', 25)
+score_sound = pygame.mixer.Sound('sounds/score.wav')
+hit_sound = pygame.mixer.Sound('sounds/hit.wav')
+spawn_sound = pygame.mixer.Sound('sounds/spawn.wav')
 
 FPS = 60
 fpsClock = pygame.time.Clock()
@@ -491,6 +510,7 @@ while True:
                     ballMoving = True
                     vx = round(random.uniform(-1.0, 1.0), 2)
                     vy = round(random.uniform(-1.0, 1.0), 2)
+                    spawn_sound.play()
         if ballMoving:
             ball = ball_movement(ball, 0)
         if leftMovingUp and not leftMovingDown:
