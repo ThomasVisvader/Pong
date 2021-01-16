@@ -25,29 +25,31 @@ def right_score():
 
 
 def paddle_collision(ball, paddle):
-    global vx, vy, ball_speed
+    global vx, vy, ball_speed, direction
     alpha = 75
     c_point = ball.center[1] - paddle.center[1]
     c_point = c_point / (paddle_height / 2)
     if c_point < -1:
+        ball.bottom = paddle.top
         c_point = -1
     elif c_point > 1:
+        ball.top = paddle.bottom
         c_point = 1
     angle = c_point * alpha
     if paddle == left_paddle:
-        ball.left = paddle.right
-        if angle == 0:
-            direction = 0
-        elif angle < 0:
-            direction = 360 - alpha
+        if c_point != -1 and c_point != 1:
+            ball.left = paddle.right
+        if angle < 0:
+            direction = 360 + angle
         else:
-            direction = alpha
+            direction = angle
     else:
-        ball.right = paddle.left
+        if c_point != -1 and c_point != 1:
+            ball.right = paddle.left
         if angle == 0:
             direction = 180
         else:
-            direction = 180 - alpha
+            direction = 180 - angle
     ball_speed += 1
     vx = ball_speed * math.cos(math.radians(direction))
     vy = ball_speed * math.sin(math.radians(direction))
@@ -79,12 +81,10 @@ def ball_movement(ball):
     global vx, vy
     if ball.right >= width:
         left_score()
-        ball.x = width // 2
-        ball.y = height // 2
+        ball.center = (ballx, bally)
     elif ball.left <= 0:
         right_score()
-        ball.x = width // 2
-        ball.y = height // 2
+        ball.center = (ballx, bally)
     else:
         if ball.top <= 65:
             ball.top = 65
@@ -397,6 +397,8 @@ ball = pygame.Rect(ballx, bally, ballsize, ballsize)
 ball.center = (ballx, bally)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
 right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
+left_paddle.center = (leftx, lefty)
+right_paddle.center = (rightx, righty)
 
 left_points = 0
 right_points = 0
@@ -492,7 +494,11 @@ while True:
                     rightMovingDown = True
                 if not ballMoving:
                     ballMoving = True
-                    direction = random.randint(0, 360)
+                    dirchoice = random.choice([0, 1])
+                    if dirchoice == 0:
+                        direction = random.randint(91, 269)
+                    else:
+                        direction = random.randint(276, 444)
                     vx = ball_speed * math.cos(math.radians(direction))
                     vy = ball_speed * math.sin(math.radians(direction))
                     spawn_sound.play()
@@ -528,5 +534,7 @@ while True:
         textFont.render_to(screen, (100, 90), str(vx), fgcolor=(255, 255, 255))
         textFont.render_to(screen, (100, 110), str(vy), fgcolor=(255, 255, 255))
         textFont.render_to(screen, (100, 130), str(v), fgcolor=(255, 255, 255))
+        textFont.render_to(screen, (100, 150), str(direction), fgcolor=(255, 255, 255))
+        textFont.render_to(screen, (100, 170), str(dirchoice), fgcolor=(255, 255, 255))
     pygame.display.update()
     fpsClock.tick(FPS)
