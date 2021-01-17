@@ -13,6 +13,7 @@ def left_score():
     left_points += 1
     ballMoving = False
     ball_speed = 10.0
+    ball.center = (width + 50, 300)
     score_sound.play()
 
 
@@ -21,12 +22,13 @@ def right_score():
     right_points += 1
     ballMoving = False
     ball_speed = 10.0
+    ball.center = (-50, 300)
     score_sound.play()
 
 
 def paddle_collision(ball, paddle):
     global vx, vy, ball_speed, direction
-    alpha = 75
+    alpha = 50
     c_point = ball.center[1] - paddle.center[1]
     c_point = c_point / (paddle_height / 2)
     if c_point < -1:
@@ -50,7 +52,8 @@ def paddle_collision(ball, paddle):
             direction = 180
         else:
             direction = 180 - angle
-    ball_speed += 1
+    if ball_speed < 22.0:
+        ball_speed += 1
     vx = ball_speed * math.cos(math.radians(direction))
     vy = ball_speed * math.sin(math.radians(direction))
     ball.x += vx
@@ -81,10 +84,8 @@ def ball_movement(ball):
     global vx, vy
     if ball.right >= width:
         left_score()
-        ball.center = (ballx, bally)
     elif ball.left <= 0:
         right_score()
-        ball.center = (ballx, bally)
     else:
         if ball.top <= 65:
             ball.top = 65
@@ -100,16 +101,16 @@ def ball_movement(ball):
 
 
 def move_up(paddle):
-    if paddle.top <= 65:
-        paddle.top = 65
+    if paddle.top <= -70:
+        paddle.top = -70
         return paddle
     paddle.y -= paddle_speed
     return paddle
 
 
 def move_down(paddle):
-    if paddle.bottom >= height - 65:
-        paddle.bottom = height - 65
+    if paddle.bottom >= height + 70:
+        paddle.bottom = height + 70
         return paddle
     paddle.y += paddle_speed
     return paddle
@@ -418,8 +419,14 @@ blocks.append(pygame.Rect(0, -60, 60, 60))
 blocks.append(pygame.Rect(0, 80, 60, 110))
 for i in range(6):
     blocks.append(pygame.Rect(0, 270 + (i*140), 60, 60))
+diffBlock = pygame.Rect(0, -60, 60, 60)
 
 write_score()
+dirchoice = random.choice([0, 1])
+if dirchoice == 0:
+    direction = random.randint(91, 269)
+else:
+    direction = random.randint(276, 444)
 while True:
     if not gameStarted:
         if not chosen:
@@ -494,11 +501,8 @@ while True:
                     rightMovingDown = True
                 if not ballMoving:
                     ballMoving = True
-                    dirchoice = random.choice([0, 1])
-                    if dirchoice == 0:
-                        direction = random.randint(91, 269)
-                    else:
-                        direction = random.randint(276, 444)
+                    ball.x = ballx
+                    ball.y = random.randint(65, height-65)
                     vx = ball_speed * math.cos(math.radians(direction))
                     vy = ball_speed * math.sin(math.radians(direction))
                     spawn_sound.play()
