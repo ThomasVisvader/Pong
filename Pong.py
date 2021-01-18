@@ -9,20 +9,22 @@ from pygame.locals import *
 
 
 def left_score():
-    global left_points, ballMoving, ball_speed
+    global left_points, ballMoving, ball_speed, dirchoice
     left_points += 1
     ballMoving = False
     ball_speed = 10.0
     ball.center = (width + 50, 300)
+    dirchoice = 1
     score_sound.play()
 
 
 def right_score():
-    global right_points, ballMoving, ball_speed
+    global right_points, ballMoving, ball_speed, dirchoice
     right_points += 1
     ballMoving = False
     ball_speed = 10.0
     ball.center = (-50, 300)
+    dirchoice = 0
     score_sound.play()
 
 
@@ -331,28 +333,26 @@ def intro(yspeed):
     pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, 140))
     pygame.draw.rect(screen, (0, 0, 0), (0, 390, width, height - 390))
     background()
-    global blocks, introMovingUp
-    for block in blocks:
-        line_animation(block)
-        if introMovingUp:
-            block.y -= yspeed
-        else:
-            block.y += yspeed
-        block.x += 3
-    if (blocks[1].y + 110 == height and not introMovingUp) or \
-            (blocks[1].y == 60 and introMovingUp):
+    global blockList, introMovingUp
+    for blocks in blockList:
+        for block in blocks:
+            line_animation(block)
+            if introMovingUp:
+                block.y -= yspeed
+            else:
+                block.y += yspeed
+            block.x += 3
+    if (blockList[0][1].y + 110 == height and not introMovingUp) or \
+            (blockList[0][1].y == 60 and introMovingUp):
         introMovingUp = bool(random.getrandbits(1))
     screen.blit(score_screen, (0, 140))
     draw_net()
 
 
 def line_animation(block):
-    for j in range(12):
-        pygame.draw.rect(screen, (0, 0, 0), block)
-        color(block)
-        block.x += 120
-    block.x -= 120 * 12
-    if block.x >= 60:
+    pygame.draw.rect(screen, (0, 0, 0), block)
+    color(block)
+    if block.x >= 1650:
         block.x = -60
     if not introMovingUp and block.y >= height + 80:
         block.y = -120
@@ -414,19 +414,20 @@ gameStarted = False
 introMovingUp = False
 chosen = False
 
+blockList = []
 blocks = []
-blocks.append(pygame.Rect(0, -60, 60, 60))
-blocks.append(pygame.Rect(0, 80, 60, 110))
-for i in range(6):
-    blocks.append(pygame.Rect(0, 270 + (i*140), 60, 60))
-diffBlock = pygame.Rect(0, -60, 60, 60)
+for i in range(14):
+    blocks.append(pygame.Rect(i * 120, -60, 60, 60))
+    blocks.append(pygame.Rect(i * 120, 80, 60, 110))
+    for j in range(6):
+        blocks.append(pygame.Rect(i * 120, 270 + (j*140), 60, 60))
+    blockList.append(blocks[:])
+    blocks.clear()
+for blocks in blockList:
+    print(blocks)
 
 write_score()
 dirchoice = random.choice([0, 1])
-if dirchoice == 0:
-    direction = random.randint(91, 269)
-else:
-    direction = random.randint(276, 444)
 while True:
     if not gameStarted:
         if not chosen:
@@ -503,6 +504,11 @@ while True:
                     ballMoving = True
                     ball.x = ballx
                     ball.y = random.randint(65, height-65)
+                    ball.y = 65
+                    if dirchoice == 0:
+                        direction = random.randint(91, 269)
+                    else:
+                        direction = random.randint(276, 444)
                     vx = ball_speed * math.cos(math.radians(direction))
                     vy = ball_speed * math.sin(math.radians(direction))
                     spawn_sound.play()
