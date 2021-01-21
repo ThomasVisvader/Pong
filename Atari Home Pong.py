@@ -5,27 +5,30 @@ import random
 import heapq
 import ctypes
 import math
+import time
 from pygame.locals import *
 
 
 def left_score():
-    global left_points, ballMoving, ball_speed, dirchoice
+    global left_points, ballMoving, ball_speed, dirchoice, scored
     left_points += 1
     ballMoving = False
     ball_speed = 10.0
     ball.center = (width + 50, 300)
     dirchoice = 1
+    scored = True
     score_sound.play()
 
 
 def right_score():
-    global right_points, ballMoving, ball_speed, dirchoice
+    global right_points, ballMoving, ball_speed, dirchoice, scored
     right_points += 1
     ballMoving = False
     ball_speed = 10.0
     ball.center = (-50, 300)
     dirchoice = 0
     score_sound.play()
+    scored = True
 
 
 def paddle_collision(ball, paddle):
@@ -62,24 +65,6 @@ def paddle_collision(ball, paddle):
     ball.y += vy
     hit_sound.play()
     return ball
-
-# alpha = max relative angle
-# relative angle = c_point * alpha
-# actual angle :
-# if left_paddle:
-#   if relative angle == 0:
-#       actual angle = 0
-#   elif relative angle < 0:
-#       actual angle = 360 - alpha
-#   else:
-#       actual angle = relative angle
-# elif right_paddle:
-#   if relative angle == 0:
-#       actual angle = 180
-#   elif relative angle < 0:
-#       actual angle = 180 - relative angle
-#   else:
-#       actual angle = 180 - relative angle
 
 
 def ball_movement(ball):
@@ -263,7 +248,7 @@ def color(obj):
         x += 5
 
 
-def write_score():
+def make_score():
     score_screen.fill((0, 0, 0))
     if left_points < 10:
         if left_points == 1:
@@ -297,6 +282,10 @@ def write_score():
         else:
             scoreFont.render_to(score_screen, (980, 0), str(right_points - 10), fgcolor=(255, 255, 255))
             color_score(980, 0)
+    write_score()
+
+
+def write_score():
     screen.blit(score_screen, (0, 140))
 
 
@@ -321,12 +310,21 @@ def get_pixel_color(x):
     return red, green, blue
 
 
-def restart():
+def new_game(type):
     screen.fill((0, 0, 0))
-    global left_points, right_points, gameStarted
+    global left_points, right_points, leftMovingUp, leftMovingDown, rightMovingUp, rightMovingDown, \
+        gameStarted, ball, ballTimer, ballMoving
+    if type == 0:
+        gameStarted = False
+    ball.center = (ballx, bally)
     left_points = 0
     right_points = 0
-    gameStarted = False
+    ballTimer = 0
+    leftMovingUp = False
+    leftMovingDown = False
+    rightMovingUp = False
+    rightMovingDown = False
+    ballMoving = False
 
 
 def intro(yspeed):
@@ -366,11 +364,8 @@ height = 960
 width = 1280
 screen = pygame.display.set_mode((width, height))
 score_screen = pygame.Surface((width, 255))
-intro_screen = pygame.Surface((width, height))
-pygame.display.set_caption('Pong')
+pygame.display.set_caption('Atari Home Pong')
 scoreFont = pygame.freetype.Font('text/Cone.ttf', 420)
-titleFont = pygame.freetype.Font('text/Cone.ttf', 270)
-textFont = pygame.freetype.Font('text/Cone.ttf', 25)
 score_sound = pygame.mixer.Sound('sounds/score.wav')
 hit_sound = pygame.mixer.Sound('sounds/hit.wav')
 spawn_sound = pygame.mixer.Sound('sounds/spawn.wav')
@@ -385,24 +380,25 @@ leftx = 100
 lefty = height // 2
 rightx = width - 100 - paddle_width
 righty = height // 2
-ballx = width // 2
-bally = height // 2
+ballx = width // 2 - 5
+bally = height // 2 + 5
 paddle_speed = 10.0
 ball_speed = 10.0
+yspeed = 0
 
-startButton = pygame.Rect(width // 2 - 100, height // 2, 200, 50)
-exitButton = pygame.Rect(width // 2 - 100, height // 2 + 100, 200, 50)
 topWall = pygame.Rect(0, 0, width, 65)
 bottomWall = pygame.Rect(0, height-65, width, 65)
 ball = pygame.Rect(ballx, bally, ballsize, ballsize)
 ball.center = (ballx, bally)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
-right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
 left_paddle.center = (leftx, lefty)
+right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
 right_paddle.center = (rightx, righty)
 
 left_points = 0
 right_points = 0
+ballTimer = 0
+scoreTime = 0
 
 leftMovingUp = False
 leftMovingDown = False
@@ -410,7 +406,7 @@ rightMovingUp = False
 rightMovingDown = False
 ballMoving = False
 gameStarted = False
-back = False
+scored = False
 
 introMovingUp = False
 chosen = False
@@ -425,7 +421,7 @@ for i in range(14):
     blockList.append(blocks[:])
     blocks.clear()
 
-write_score()
+make_score()
 dirchoice = random.choice([0, 1])
 while True:
     if not gameStarted:
@@ -441,32 +437,12 @@ while True:
             color(right_paddle)
             pygame.draw.rect(screen, (255, 255, 255), ball)
             color(ball)
-        # longBlock.x += 5
-        # longBlock.y += 5
-        # titleFont.render_to(screen, (400, 200), 'PONG', fgcolor=(255, 255, 255))
-        # mouse = pygame.mouse.get_pos()
-        # if startButton.collidepoint(mouse):
-        #     pygame.draw.rect(screen, (128, 128, 128), startButton)
-        #     textFont.render_to(screen, (startButton.x + 55, startButton.y + 20), 'Start game', fgcolor=(0, 0, 0))
-        # else:
-        #     pygame.draw.rect(screen, (255, 255, 255), startButton)
-        #     textFont.render_to(screen, (startButton.x + 55, startButton.y + 20), 'Start game', fgcolor=(0, 0, 0))
-        # if exitButton.collidepoint(mouse):
-        #     pygame.draw.rect(screen, (128, 128, 128), exitButton)
-        #     textFont.render_to(screen, (exitButton.x + 60, exitButton.y + 20), 'Exit game', fgcolor=(0, 0, 0))
-        # else:
-        #     pygame.draw.rect(screen, (255, 255, 255), exitButton)
-        #     textFont.render_to(screen, (exitButton.x + 60, exitButton.y + 20), 'Exit game', fgcolor=(0, 0, 0))
         for event in pygame.event.get():
             if event.type == KEYUP:
-                if event.key == K_RETURN:
+                if event.key == K_r:
                     gameStarted = True
-            # if event.type == MOUSEBUTTONUP:
-            #     if startButton.collidepoint(mouse):
-            #         gameStarted = True
-            #     elif exitButton.collidepoint(mouse):
-            #         pygame.quit()
-            #         sys.exit()
+                    make_score()
+                    scoreTime = time.time()
             elif event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -487,6 +463,10 @@ while True:
                     rightMovingUp = False
                 elif event.key == K_DOWN:
                     rightMovingDown = False
+                elif event.key == K_r:
+                    new_game(1)
+                    scoreTime = time.time()
+                    make_score()
             elif event.type == KEYDOWN:
                 if event.key == K_w:
                     leftMovingUp = True
@@ -496,18 +476,18 @@ while True:
                     rightMovingUp = True
                 elif event.key == K_DOWN:
                     rightMovingDown = True
-                if not ballMoving:
-                    ballMoving = True
-                    ball.x = ballx
-                    ball.y = random.randint(65, height-65)
-                    ball.y = 65
-                    if dirchoice == 0:
-                        direction = random.randint(91, 269)
-                    else:
-                        direction = random.randint(276, 444)
-                    vx = ball_speed * math.cos(math.radians(direction))
-                    vy = ball_speed * math.sin(math.radians(direction))
-                    spawn_sound.play()
+        if not ballMoving and ballTimer >= 2:
+            ballMoving = True
+            ball.x = ballx
+            ball.y = random.randint(66, height-84)
+            if dirchoice == 0:
+                direction = random.randint(91, 269)
+            else:
+                direction = random.randint(276, 444)
+            vx = ball_speed * math.cos(math.radians(direction))
+            vy = ball_speed * math.sin(math.radians(direction))
+            spawn_sound.play()
+            ballTimer = 0
         if ballMoving:
             ball = ball_movement(ball)
         if leftMovingUp and not leftMovingDown:
@@ -522,10 +502,15 @@ while True:
             ball = paddle_collision(ball, left_paddle)
         elif ball.colliderect(right_paddle):
             ball = paddle_collision(ball, right_paddle)
-        if not ballMoving:
-            write_score()
+        if scored:
+            scored = False
+            make_score()
+            scoreTime = time.time()
             if left_points == 15 or right_points == 15:
-                restart()
+                new_game(0)
+        if gameStarted and not ballMoving:
+            write_score()
+            ballTimer = time.time() - scoreTime
         background()
         pygame.draw.rect(screen, (255, 255, 255), left_paddle)
         color(left_paddle)
@@ -533,14 +518,5 @@ while True:
         color(right_paddle)
         pygame.draw.rect(screen, (255, 255, 255), ball)
         color(ball)
-    if ballMoving:
-        v = math.sqrt(math.pow(vx, 2) + math.pow(vy, 2))
-        textFont.render_to(screen, (100, 30), str(ball.x), fgcolor=(255, 255, 255))
-        textFont.render_to(screen, (100, 50), str(ball.y), fgcolor=(255, 255, 255))
-        textFont.render_to(screen, (100, 90), str(vx), fgcolor=(255, 255, 255))
-        textFont.render_to(screen, (100, 110), str(vy), fgcolor=(255, 255, 255))
-        textFont.render_to(screen, (100, 130), str(v), fgcolor=(255, 255, 255))
-        textFont.render_to(screen, (100, 150), str(direction), fgcolor=(255, 255, 255))
-        textFont.render_to(screen, (100, 170), str(dirchoice), fgcolor=(255, 255, 255))
     pygame.display.update()
     fpsClock.tick(FPS)
