@@ -481,9 +481,17 @@ while True:
             ball.x = ballx
             ball.y = random.randint(66, height-84)
             if dirchoice == 0:
-                direction = random.randint(91, 269)
+                quadrant = random.choice([2, 3])
+                if quadrant == 2:
+                    direction = random.randint(91, 180)
+                else:
+                    direction = random.randint(186, 269)
             else:
-                direction = random.randint(276, 444)
+                quadrant = random.choice([1, 4])
+                if quadrant == 1:
+                    direction = random.randint(0, 84)
+                else:
+                    direction = random.randint(276, 354)
             vx = ball_speed * math.cos(math.radians(direction))
             vy = ball_speed * math.sin(math.radians(direction))
             spawn_sound.play()
