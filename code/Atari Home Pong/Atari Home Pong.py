@@ -464,6 +464,9 @@ while True:
                         controls = 'Key'
                     else:
                         controls = 'Mouse'
+                elif event.key == K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
             elif event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -484,6 +487,9 @@ while True:
                 new_game(1)
                 scoreTime = time.time()
                 make_score()
+            elif event.type == KEYUP and event.key == K_ESCAPE:
+                pygame.quit()
+                sys.exit()
             if controls == 'Mouse':
                 if event.type == MOUSEMOTION:
                     position = pygame.mouse.get_pos()
