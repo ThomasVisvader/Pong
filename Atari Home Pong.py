@@ -32,7 +32,7 @@ def right_score():
 
 
 def paddle_collision(ball, paddle):
-    global vx, vy, ball_speed, direction
+    global vx, vy, ball_speed, direction, leftMoving
     alpha = 50
     c_point = ball.center[1] - paddle.center[1]
     c_point = c_point / (paddle_height / 2)
@@ -50,6 +50,8 @@ def paddle_collision(ball, paddle):
             direction = 360 + angle
         else:
             direction = angle
+        leftMoving = False
+        pygame.mouse.set_pos([width / 2, right_paddle.y])
     else:
         if c_point != -1 and c_point != 1:
             ball.right = paddle.left
@@ -57,8 +59,14 @@ def paddle_collision(ball, paddle):
             direction = 180
         else:
             direction = 180 - angle
+        leftMoving = True
+        pygame.mouse.set_pos([width / 2, left_paddle.y])
     if ball_speed < 22.0:
         ball_speed += 1
+    if 181 <= direction <= 185:
+        direction = 180
+    elif 355 <= direction <= 359:
+        direction = 0
     vx = ball_speed * math.cos(math.radians(direction))
     vy = ball_speed * math.sin(math.radians(direction))
     ball.x += vx
@@ -400,6 +408,7 @@ right_points = 0
 ballTimer = 0
 scoreTime = 0
 
+controls = 'Mouse'
 leftMovingUp = False
 leftMovingDown = False
 rightMovingUp = False
@@ -423,6 +432,13 @@ for i in range(14):
 
 make_score()
 dirchoice = random.choice([0, 1])
+if dirchoice == 0:
+    leftMoving = True
+else:
+    leftMoving = False
+
+pygame.mouse.set_cursor((8, 8), (0, 0), (0, 0, 0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0, 0, 0))
+pygame.mouse.set_pos([0, 0])
 while True:
     if not gameStarted:
         if not chosen:
@@ -439,10 +455,15 @@ while True:
             color(ball)
         for event in pygame.event.get():
             if event.type == KEYUP:
-                if event.key == K_r:
+                if event.key == K_SPACE:
                     gameStarted = True
                     make_score()
                     scoreTime = time.time()
+                elif event.key == K_LSHIFT:
+                    if controls == 'Mouse':
+                        controls = 'Key'
+                    else:
+                        controls = 'Mouse'
             elif event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -454,28 +475,42 @@ while True:
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == KEYUP:
-                if event.key == K_w:
-                    leftMovingUp = False
-                elif event.key == K_s:
-                    leftMovingDown = False
-                elif event.key == K_UP:
-                    rightMovingUp = False
-                elif event.key == K_DOWN:
-                    rightMovingDown = False
-                elif event.key == K_r:
-                    new_game(1)
-                    scoreTime = time.time()
-                    make_score()
-            elif event.type == KEYDOWN:
-                if event.key == K_w:
-                    leftMovingUp = True
-                elif event.key == K_s:
-                    leftMovingDown = True
-                elif event.key == K_UP:
-                    rightMovingUp = True
-                elif event.key == K_DOWN:
-                    rightMovingDown = True
+            elif event.type == KEYUP and event.key == K_LSHIFT:
+                if controls == 'Mouse':
+                    controls = 'Key'
+                else:
+                    controls = 'Mouse'
+            elif event.type == KEYUP and event.key == K_SPACE:
+                new_game(1)
+                scoreTime = time.time()
+                make_score()
+            if controls == 'Mouse':
+                if event.type == MOUSEMOTION:
+                    position = pygame.mouse.get_pos()
+                    pygame.mouse.set_pos(width / 2, position[1])
+                    if leftMoving:
+                        left_paddle.y = position[1]
+                    else:
+                        right_paddle.y = position[1]
+            elif controls == 'Key':
+                if event.type == KEYUP:
+                    if event.key == K_w:
+                        leftMovingUp = False
+                    elif event.key == K_s:
+                        leftMovingDown = False
+                    elif event.key == K_UP:
+                        rightMovingUp = False
+                    elif event.key == K_DOWN:
+                        rightMovingDown = False
+                elif event.type == KEYDOWN:
+                    if event.key == K_w:
+                        leftMovingUp = True
+                    elif event.key == K_s:
+                        leftMovingDown = True
+                    elif event.key == K_UP:
+                        rightMovingUp = True
+                    elif event.key == K_DOWN:
+                        rightMovingDown = True
         if not ballMoving and ballTimer >= 2:
             ballMoving = True
             ball.x = ballx
@@ -498,14 +533,15 @@ while True:
             ballTimer = 0
         if ballMoving:
             ball = ball_movement(ball)
-        if leftMovingUp and not leftMovingDown:
-            left_paddle = move_up(left_paddle)
-        elif leftMovingDown and not leftMovingUp:
-            left_paddle = move_down(left_paddle)
-        if rightMovingUp and not rightMovingDown:
-            right_paddle = move_up(right_paddle)
-        elif rightMovingDown and not rightMovingUp:
-            right_paddle = move_down(right_paddle)
+        if controls == 'Key':
+            if leftMovingUp and not leftMovingDown:
+                left_paddle = move_up(left_paddle)
+            elif leftMovingDown and not leftMovingUp:
+                left_paddle = move_down(left_paddle)
+            if rightMovingUp and not rightMovingDown:
+                right_paddle = move_up(right_paddle)
+            elif rightMovingDown and not rightMovingUp:
+                right_paddle = move_down(right_paddle)
         if ball.colliderect(left_paddle):
             ball = paddle_collision(ball, left_paddle)
         elif ball.colliderect(right_paddle):
