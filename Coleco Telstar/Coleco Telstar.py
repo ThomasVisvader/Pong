@@ -44,7 +44,7 @@ def paddle_collision(ball, paddle):
         ball.top = paddle.bottom
         c_point = 1
     angle = c_point * alpha
-    if paddle == left_paddle:
+    if paddle == left_paddle or paddle == left_paddle2:
         if c_point != -1 and c_point != 1:
             ball.left = paddle.right
         if angle < 0:
@@ -82,7 +82,7 @@ def ball_movement(ball):
         left_score()
     elif ball.left <= 0:
         right_score()
-    elif ballSpawning and 700 <= ball.centerx <= 900:
+    elif ballSpawning and 100 <= ball.centerx <= 1200:
         ballSpawning = False
     else:
         if ball.top <= 12:
@@ -93,6 +93,15 @@ def ball_movement(ball):
             ball.bottom = height - 12
             vy *= -1
             wall_hit_sound.play()
+        elif game == 2:
+            if ball.left <= 30 and not 210 <= ball.top <= 750 - ball_height:
+                ball.left = 30
+                vx *= -1
+                wall_hit_sound.play()
+            elif ball.right >= width - 30 and not 210 <= ball.top <= 750 - ball_height:
+                ball.right = width - 30
+                vx *= -1
+                wall_hit_sound.play()
         elif game == 3 and ball.left <= 30:
             ball.left = 30
             vx *= -1
@@ -124,6 +133,16 @@ def draw_walls():
     for i in range(36):
         pygame.draw.rect(screen, (255, 255, 255), (30 + i * 35, 0, 25, 12))
         pygame.draw.rect(screen, (255, 255, 255), (30 + i * 35, height - 12, 25, 12))
+
+
+def draw_hockey_walls():
+    for i in range(96):
+        if 21 <= i < 75:
+            continue
+        pygame.draw.rect(screen, (255, 255, 255), (0, i*10, 30, 8))
+        pygame.draw.rect(screen, (0, 0, 0), (0, (i * 10) + 8, 30, 2))
+        pygame.draw.rect(screen, (255, 255, 255), (width - 30, i * 10, 30, 8))
+        pygame.draw.rect(screen, (0, 0, 0), (width - 30, (i * 10) + 8, 30, 2))
 
 
 def draw_handball_wall():
@@ -161,12 +180,12 @@ def make_score():
 
 def write_score():
     global game
-    if game == 1:
-        screen.blit(score_screen, (50, 32))
-    elif game == 3:
+    if game == 3:
         handball_screen.blit(score_screen, (0, 0))
         pygame.draw.rect(handball_screen, (0, 0, 0), (724, 0, 200, 200))
         screen.blit(handball_screen, (50, 32))
+    else:
+        screen.blit(score_screen, (50, 32))
 
 
 def new_game(type):
@@ -225,7 +244,48 @@ def tennis():
 
 
 def hockey():
-    return 0
+    global scored, gameStarted, scoreTime, ball, controls, left_paddle, right_paddle, left_paddle2, right_paddle2
+    controls = 'Key'
+    left_paddle2.y = left_paddle.y
+    right_paddle2.y = right_paddle.y
+    right_paddle.x = rightx
+    if controls == 'Key':
+        if leftMovingUp and not leftMovingDown:
+            left_paddle = move_up(left_paddle)
+            left_paddle2 = move_up(left_paddle2)
+        elif leftMovingDown and not leftMovingUp:
+            left_paddle = move_down(left_paddle)
+            left_paddle2 = move_down(left_paddle2)
+        if rightMovingUp and not rightMovingDown:
+            right_paddle = move_up(right_paddle)
+            right_paddle2 = move_up(right_paddle2)
+        elif rightMovingDown and not rightMovingUp:
+            right_paddle = move_down(right_paddle)
+            right_paddle2 = move_down(right_paddle2)
+    if gameStarted and not ballSpawning:
+        if ball.colliderect(left_paddle):
+            ball = paddle_collision(ball, left_paddle)
+        elif ball.colliderect(left_paddle2):
+            ball = paddle_collision(ball, left_paddle2)
+        elif ball.colliderect(right_paddle):
+            ball = paddle_collision(ball, right_paddle)
+        elif ball.colliderect(right_paddle2):
+            ball = paddle_collision(ball, right_paddle2)
+    if scored:
+        scored = False
+        if gameStarted:
+            make_score()
+        scoreTime = time.time()
+        if left_points == 15 or right_points == 15:
+            new_game(0)
+    write_score()
+    draw_walls()
+    draw_hockey_walls()
+    pygame.draw.rect(screen, (255, 255, 255), net)
+    pygame.draw.rect(screen, (255, 255, 255), left_paddle)
+    pygame.draw.rect(screen, (255, 255, 255), right_paddle)
+    pygame.draw.rect(screen, (255, 255, 255), left_paddle2)
+    pygame.draw.rect(screen, (255, 255, 255), right_paddle2)
 
 
 def handball():
@@ -278,7 +338,7 @@ rightx = width - 32 - paddle_width
 righty = height // 2
 ballx = -50
 bally = -50
-paddle_speed = 10.0
+paddle_speed = 20.0
 ball_speed = 15.0
 
 topWall = pygame.Rect(0, 0, width, 12)
@@ -286,7 +346,9 @@ bottomWall = pygame.Rect(0, height-12, width, 12)
 net = pygame.Rect(633, 0, paddle_width, height)
 ball = pygame.Rect(ballx, bally, ball_width, ball_height)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
+left_paddle2 = pygame.Rect(930, righty, paddle_width, paddle_height)
 right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
+right_paddle2 = pygame.Rect(320, righty, paddle_width, paddle_height)
 
 
 left_points = 0
@@ -348,16 +410,22 @@ while True:
             paddle_height = 150
             left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle = pygame.Rect(rightx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
+            left_paddle2 = pygame.Rect(930, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
+            right_paddle2 = pygame.Rect(320, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
         elif event.type == KEYUP and event.key == K_2:
             ball_speed = 15.0
             paddle_height = 75
             left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle = pygame.Rect(rightx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
+            left_paddle2 = pygame.Rect(930, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
+            right_paddle2 = pygame.Rect(320, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
         elif event.type == KEYUP and event.key == K_3:
             ball_speed = 29.0
             paddle_height = 150
             left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle = pygame.Rect(rightx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
+            left_paddle2 = pygame.Rect(930, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
+            right_paddle2 = pygame.Rect(320, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
         if controls == 'Mouse':
             if event.type == MOUSEMOTION:
                 position = pygame.mouse.get_pos()
