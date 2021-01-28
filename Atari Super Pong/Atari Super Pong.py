@@ -34,18 +34,29 @@ def right_score():
 
 
 def paddle_collision(ball, paddle):
-    global vx, vy, ball_speed, direction, leftMoving
+    global vx, vy, ball_speed, direction, leftMoving, game
     alpha = 50
-    c_point = ball.center[1] - paddle.center[1]
-    c_point = c_point / (paddle_height / 2)
-    if c_point < -1:
-        ball.bottom = paddle.top
-        c_point = -1
-    elif c_point > 1:
-        ball.top = paddle.bottom
-        c_point = 1
+    if game == 1:
+        if paddle == left_paddle_up or paddle == right_paddle_up:
+            c_point = ball.center[1] - paddle.bottom
+        else:
+            c_point = ball.center[1] - paddle.top
+        c_point = c_point / paddle.height
+        if c_point < -1:
+            c_point = -1
+        elif c_point > 1:
+            c_point = 1
+    else:
+        c_point = ball.center[1] - paddle.center[1]
+        c_point = c_point / (paddle_height / 2)
+        if c_point < -1:
+            ball.bottom = paddle.top
+            c_point = -1
+        elif c_point > 1:
+            ball.top = paddle.bottom
+            c_point = 1
     angle = c_point * alpha
-    if paddle == left_paddle:
+    if paddle == left_paddle or paddle == left_paddle_up or paddle == left_paddle_down:
         if c_point != -1 and c_point != 1:
             ball.left = paddle.right
         if angle < 0:
@@ -368,13 +379,92 @@ def line_animation(block):
         block.y = height + 120
 
 
+def reverse_pong():
+    global left_paddle, right_paddle, ball, scored, scoreTime, ballTimer, left_paddle_up, left_paddle_down, \
+        right_paddle_up, right_paddle_down
+    left_paddle_up = pygame.Rect(left_paddle.x, 0, paddle_width, left_paddle.y)
+    left_paddle_down = pygame.Rect(left_paddle.x, left_paddle.bottom, paddle_width, height - left_paddle.bottom)
+    right_paddle_up = pygame.Rect(right_paddle.x, 0, paddle_width, right_paddle.y)
+    right_paddle_down = pygame.Rect(right_paddle.x, right_paddle.bottom, paddle_width, height - right_paddle.bottom)
+    if controls == 'Key':
+        if leftMovingUp and not leftMovingDown:
+            left_paddle = move_up(left_paddle)
+        elif leftMovingDown and not leftMovingUp:
+            left_paddle = move_down(left_paddle)
+        if rightMovingUp and not rightMovingDown:
+            right_paddle = move_up(right_paddle)
+        elif rightMovingDown and not rightMovingUp:
+            right_paddle = move_down(right_paddle)
+    if ball.colliderect(left_paddle_up):
+        ball = paddle_collision(ball, left_paddle_up)
+    elif ball.colliderect(left_paddle_down):
+        ball = paddle_collision(ball, left_paddle_down)
+    elif ball.colliderect(right_paddle_up):
+        ball = paddle_collision(ball, right_paddle_up)
+    elif ball.colliderect(right_paddle_down):
+        ball = paddle_collision(ball, right_paddle_down)
+    if scored:
+        scored = False
+        make_score()
+        scoreTime = time.time()
+        if left_points == 15 or right_points == 15:
+            new_game(0)
+    if gameStarted and not ballMoving:
+        write_score()
+        ballTimer = time.time() - scoreTime
+    background()
+    color(left_paddle_up)
+    color(left_paddle_down)
+    color(right_paddle_up)
+    color(right_paddle_down)
+
+
+def handball():
+    return 0
+
+
+def pong_doubles():
+    return 0
+
+
+def pong():
+    global left_paddle, right_paddle, ball, scored, scoreTime, ballTimer
+    if controls == 'Key':
+        if leftMovingUp and not leftMovingDown:
+            left_paddle = move_up(left_paddle)
+        elif leftMovingDown and not leftMovingUp:
+            left_paddle = move_down(left_paddle)
+        if rightMovingUp and not rightMovingDown:
+            right_paddle = move_up(right_paddle)
+        elif rightMovingDown and not rightMovingUp:
+            right_paddle = move_down(right_paddle)
+    if ball.colliderect(left_paddle):
+        ball = paddle_collision(ball, left_paddle)
+    elif ball.colliderect(right_paddle):
+        ball = paddle_collision(ball, right_paddle)
+    if scored:
+        scored = False
+        make_score()
+        scoreTime = time.time()
+        if left_points == 15 or right_points == 15:
+            new_game(0)
+    if gameStarted and not ballMoving:
+        write_score()
+        ballTimer = time.time() - scoreTime
+    background()
+    pygame.draw.rect(screen, (255, 255, 255), left_paddle)
+    color(left_paddle)
+    pygame.draw.rect(screen, (255, 255, 255), right_paddle)
+    color(right_paddle)
+
+
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()
 height = 960
 width = 1280
 screen = pygame.display.set_mode((width, height))
 score_screen = pygame.Surface((width, 255))
-pygame.display.set_caption('Atari Home Pong')
+pygame.display.set_caption('Atari Super Pong')
 scoreFont = pygame.freetype.Font('text/Cone.ttf', 420)
 score_sound = pygame.mixer.Sound('sounds/score.wav')
 hit_sound = pygame.mixer.Sound('sounds/hit.wav')
@@ -386,10 +476,10 @@ fpsClock = pygame.time.Clock()
 paddle_height = 70
 paddle_width = 30
 ballsize = 19
-leftx = 100
-lefty = height // 2
-rightx = width - 100 - paddle_width
-righty = height // 2
+leftx = 85
+lefty = height // 2 - 15
+rightx = width - 115 - paddle_width
+righty = height // 2 - 15
 ballx = width // 2 - 5
 bally = height // 2 + 5
 paddle_speed = 10.0
@@ -401,14 +491,19 @@ bottomWall = pygame.Rect(0, height-65, width, 65)
 ball = pygame.Rect(ballx, bally, ballsize, ballsize)
 ball.center = (ballx, bally)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
-left_paddle.center = (leftx, lefty)
 right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
-right_paddle.center = (rightx, righty)
+
+
+left_paddle_up = pygame.Rect(left_paddle.x, 0, paddle_width, left_paddle.y)
+left_paddle_down = pygame.Rect(left_paddle.x, left_paddle.bottom, paddle_width, height - left_paddle.bottom)
+right_paddle_up = pygame.Rect(right_paddle.x, 0, paddle_width, right_paddle.y)
+right_paddle_down = pygame.Rect(right_paddle.x, right_paddle.bottom, paddle_width, height - right_paddle.bottom)
 
 left_points = 0
 right_points = 0
 ballTimer = 0
 dt = 0
+game = 1
 
 controls = 'Mouse'
 leftMovingUp = False
@@ -474,6 +569,14 @@ while True:
                 elif event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+                elif event.key == K_KP1:
+                    game = 1
+                elif event.key == K_KP2:
+                    game = 2
+                elif event.key == K_KP3:
+                    game = 3
+                elif event.key == K_KP4:
+                    game = 4
             elif event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -497,6 +600,14 @@ while True:
             elif event.type == KEYUP and event.key == K_ESCAPE:
                 pygame.quit()
                 sys.exit()
+            elif event.type == KEYUP and event.key == K_KP1:
+                game = 1
+            elif event.type == KEYUP and event.key == K_KP2:
+                game = 2
+            elif event.type == KEYUP and event.key == K_KP3:
+                game = 3
+            elif event.type == KEYUP and event.key == K_KP4:
+                game = 4
             if controls == 'Mouse':
                 if event.type == MOUSEMOTION:
                     position = pygame.mouse.get_pos()
@@ -546,33 +657,14 @@ while True:
             ballTimer = 0
         if ballMoving:
             ball = ball_movement(ball)
-        if controls == 'Key':
-            if leftMovingUp and not leftMovingDown:
-                left_paddle = move_up(left_paddle)
-            elif leftMovingDown and not leftMovingUp:
-                left_paddle = move_down(left_paddle)
-            if rightMovingUp and not rightMovingDown:
-                right_paddle = move_up(right_paddle)
-            elif rightMovingDown and not rightMovingUp:
-                right_paddle = move_down(right_paddle)
-        if ball.colliderect(left_paddle):
-            ball = paddle_collision(ball, left_paddle)
-        elif ball.colliderect(right_paddle):
-            ball = paddle_collision(ball, right_paddle)
-        if scored:
-            scored = False
-            make_score()
-            scoreTime = time.time()
-            if left_points == 15 or right_points == 15:
-                new_game(0)
-        if gameStarted and not ballMoving:
-            write_score()
-            ballTimer = time.time() - scoreTime
-        background()
-        pygame.draw.rect(screen, (255, 255, 255), left_paddle)
-        color(left_paddle)
-        pygame.draw.rect(screen, (255, 255, 255), right_paddle)
-        color(right_paddle)
+        if game == 1:
+            reverse_pong()
+        elif game == 2:
+            handball()
+        elif game == 3:
+            pong_doubles()
+        else:
+            pong()
         pygame.draw.rect(screen, (255, 255, 255), ball)
         color(ball)
     pygame.display.update()
