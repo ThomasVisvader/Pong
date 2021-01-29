@@ -15,9 +15,7 @@ def left_score():
     ballMoving = False
     ball_speed = 10.0
     ball.center = (width + 50, 300)
-    dirchoice = 1
     scored = True
-    leftMoving = False
     score_sound.play()
 
 
@@ -27,25 +25,20 @@ def right_score():
     ballMoving = False
     ball_speed = 10.0
     ball.center = (-50, 300)
-    dirchoice = 0
     score_sound.play()
     scored = True
-    leftMoving = True
 
 
 def paddle_collision(ball, paddle):
-    global vx, vy, ball_speed, direction, leftMoving, game
-    alpha = 50
+    global vx, vy, ball_speed, direction, leftMoving
     if game == 1:
-        if paddle == left_paddle_up or paddle == right_paddle_up:
-            c_point = ball.center[1] - paddle.bottom
+        vx *= -1
+        if leftMoving:
+            leftMoving = False
+            pygame.mouse.set_pos([width / 2, right_paddle.y])
         else:
-            c_point = ball.center[1] - paddle.top
-        c_point = c_point / paddle.height
-        if c_point < -1:
-            c_point = -1
-        elif c_point > 1:
-            c_point = 1
+            leftMoving = True
+            pygame.mouse.set_pos([width / 2, left_paddle.y])
     else:
         c_point = ball.center[1] - paddle.center[1]
         c_point = c_point / (paddle_height / 2)
@@ -55,45 +48,66 @@ def paddle_collision(ball, paddle):
         elif c_point > 1:
             ball.top = paddle.bottom
             c_point = 1
-    angle = c_point * alpha
-    if paddle == left_paddle or paddle == left_paddle_up or paddle == left_paddle_down:
-        if c_point != -1 and c_point != 1:
-            ball.left = paddle.right
-        if angle < 0:
-            direction = 360 + angle
+        volley = ball_speed - 9.0
+        if 1 <= volley <= 4:
+            alpha = 30
+            inc = 15
+        elif 5 <= volley <= 8:
+            alpha = 25
+            inc = 10
         else:
-            direction = angle
-        leftMoving = False
-        pygame.mouse.set_pos([width / 2, right_paddle.y])
-    else:
-        if c_point != -1 and c_point != 1:
-            ball.right = paddle.left
-        if angle == 0:
-            direction = 180
+            alpha = 10
+            inc = 10
+        if paddle == left_paddle:
+            leftMoving = False
+            pygame.mouse.set_pos([width / 2, right_paddle.y])
+            straight = 360
         else:
-            direction = 180 - angle
-        leftMoving = True
-        pygame.mouse.set_pos([width / 2, left_paddle.y])
-    if ball_speed < 22.0:
-        ball_speed += 1
-    if 181 <= direction <= 185:
-        direction = 180
-    elif 355 <= direction <= 359:
-        direction = 0
-    vx = ball_speed * math.cos(math.radians(direction))
-    vy = ball_speed * math.sin(math.radians(direction))
-    ball.x += vx
-    ball.y += vy
+            leftMoving = True
+            pygame.mouse.set_pos([width / 2, left_paddle.y])
+            straight = 180
+            alpha *= -1
+            inc *= -1
+        if -0.25 < c_point < 0.25:
+            direction = straight
+        elif -0.5 <= c_point <= -0.25:
+            direction = straight - alpha
+        elif -0.75 <= c_point < -0.5:
+            direction = straight - alpha - inc
+        elif -1 <= c_point < -0.75:
+            direction = straight - alpha - (2 * inc)
+        elif 0.25 <= c_point <= 0.5:
+            direction = straight + alpha
+        elif 0.5 < c_point <= 0.75:
+            direction = straight + alpha + inc
+        elif 0.75 < c_point <= 1:
+            direction = straight + alpha + (2 * inc)
+        if ball_speed < 22.0:
+            ball_speed += 1
+        vx = ball_speed * math.cos(math.radians(direction))
+        vy = ball_speed * math.sin(math.radians(direction))
+    ball.x += vx * dt
+    ball.y += vy * dt
     hit_sound.play()
     return ball
 
 
 def ball_movement(ball):
-    global vx, vy
+    global vx, vy, dirchoice, leftMoving
     if ball.right >= width:
-        left_score()
+        if game == 1:
+            right_score()
+        else:
+            left_score()
+        dirchoice = 1
+        leftMoving = False
     elif ball.left <= 0:
-        right_score()
+        if game == 1:
+            left_score()
+        else:
+            right_score()
+        dirchoice = 0
+        leftMoving = True
     else:
         if ball.top <= 65:
             ball.top = 65
@@ -334,7 +348,7 @@ def get_pixel_color(x):
 def new_game(type):
     screen.fill((0, 0, 0))
     global left_points, right_points, leftMovingUp, leftMovingDown, rightMovingUp, rightMovingDown, \
-        gameStarted, ball, ballTimer, ballMoving
+        gameStarted, ball, ballTimer, ballMoving, leftMoving, dirchoice
     if type == 0:
         gameStarted = False
     ball.center = (ballx, bally)
@@ -346,6 +360,10 @@ def new_game(type):
     rightMovingUp = False
     rightMovingDown = False
     ballMoving = False
+    if leftMoving:
+        dirchoice = 0
+    else:
+        dirchoice = 1
 
 
 def intro(yspeed):
@@ -452,9 +470,7 @@ def pong():
         write_score()
         ballTimer = time.time() - scoreTime
     background()
-    pygame.draw.rect(screen, (255, 255, 255), left_paddle)
     color(left_paddle)
-    pygame.draw.rect(screen, (255, 255, 255), right_paddle)
     color(right_paddle)
 
 
@@ -549,11 +565,10 @@ while True:
             chosen = True
         else:
             intro(yspeed)
-            pygame.draw.rect(screen, (255, 255, 255), left_paddle)
-            color(left_paddle)
-            pygame.draw.rect(screen, (255, 255, 255), right_paddle)
-            color(right_paddle)
-            pygame.draw.rect(screen, (255, 255, 255), ball)
+            color(left_paddle_up)
+            color(left_paddle_down)
+            color(right_paddle_up)
+            color(right_paddle_down)
             color(ball)
         for event in pygame.event.get():
             if event.type == KEYUP:
@@ -665,7 +680,6 @@ while True:
             pong_doubles()
         else:
             pong()
-        pygame.draw.rect(screen, (255, 255, 255), ball)
         color(ball)
     pygame.display.update()
     fpsClock.tick(FPS)

@@ -35,7 +35,6 @@ def right_score():
 
 def paddle_collision(ball, paddle):
     global vx, vy, ball_speed, direction, leftMoving
-    alpha = 50
     c_point = ball.center[1] - paddle.center[1]
     c_point = c_point / (paddle_height / 2)
     if c_point < -1:
@@ -44,31 +43,42 @@ def paddle_collision(ball, paddle):
     elif c_point > 1:
         ball.top = paddle.bottom
         c_point = 1
-    angle = c_point * alpha
+    volley = ball_speed - 9.0
+    if 1 <= volley <= 4:
+        alpha = 30
+        inc = 15
+    elif 5 <= volley <= 8:
+        alpha = 25
+        inc = 10
+    else:
+        alpha = 10
+        inc = 10
     if paddle == left_paddle:
-        if c_point != -1 and c_point != 1:
-            ball.left = paddle.right
-        if angle < 0:
-            direction = 360 + angle
-        else:
-            direction = angle
         leftMoving = False
         pygame.mouse.set_pos([width / 2, right_paddle.y])
+        straight = 360
     else:
-        if c_point != -1 and c_point != 1:
-            ball.right = paddle.left
-        if angle == 0:
-            direction = 180
-        else:
-            direction = 180 - angle
         leftMoving = True
         pygame.mouse.set_pos([width / 2, left_paddle.y])
+        straight = 180
+        alpha *= -1
+        inc *= -1
+    if -0.25 < c_point < 0.25:
+        direction = straight
+    elif -0.5 <= c_point <= -0.25:
+        direction = straight - alpha
+    elif -0.75 <= c_point < -0.5:
+        direction = straight - alpha - inc
+    elif -1 <= c_point < -0.75:
+        direction = straight - alpha - (2 * inc)
+    elif 0.25 <= c_point <= 0.5:
+        direction = straight + alpha
+    elif 0.5 < c_point <= 0.75:
+        direction = straight + alpha + inc
+    elif 0.75 < c_point <= 1:
+        direction = straight + alpha + (2 * inc)
     if ball_speed < 22.0:
         ball_speed += 1
-    if 181 <= direction <= 185:
-        direction = 180
-    elif 355 <= direction <= 359:
-        direction = 0
     vx = ball_speed * math.cos(math.radians(direction))
     vy = ball_speed * math.sin(math.radians(direction))
     ball.x += vx
@@ -323,7 +333,7 @@ def get_pixel_color(x):
 def new_game(type):
     screen.fill((0, 0, 0))
     global left_points, right_points, leftMovingUp, leftMovingDown, rightMovingUp, rightMovingDown, \
-        gameStarted, ball, ballTimer, ballMoving
+        gameStarted, ball, ballTimer, ballMoving, leftMoving, dirchoice
     if type == 0:
         gameStarted = False
     ball.center = (ballx, bally)
@@ -335,6 +345,10 @@ def new_game(type):
     rightMovingUp = False
     rightMovingDown = False
     ballMoving = False
+    if leftMoving:
+        dirchoice = 0
+    else:
+        dirchoice = 1
 
 
 def intro(yspeed):
