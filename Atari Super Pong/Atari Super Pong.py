@@ -32,11 +32,21 @@ def right_score():
 def paddle_collision(ball, paddle):
     global vx, vy, ball_speed, direction, leftMoving
     if game == 1:
-        vx *= -1
-        if leftMoving:
+        # vx *= -1
+        if paddle == left_paddle_up or paddle == left_paddle_down:
+            if paddle == left_paddle_up:
+                direction = 320
+            elif paddle == left_paddle_down:
+                direction = 40
+            ball.left = paddle.right
             leftMoving = False
             pygame.mouse.set_pos([width / 2, right_paddle.y])
-        else:
+        elif paddle == right_paddle_up or paddle == right_paddle_down:
+            if paddle == right_paddle_up:
+                direction = 220
+            elif paddle == right_paddle_down:
+                direction = 140
+            ball.right = paddle.left
             leftMoving = True
             pygame.mouse.set_pos([width / 2, left_paddle.y])
     else:
@@ -82,10 +92,10 @@ def paddle_collision(ball, paddle):
             direction = straight + alpha + inc
         elif 0.75 < c_point <= 1:
             direction = straight + alpha + (2 * inc)
-        if ball_speed < 22.0:
-            ball_speed += 1
-        vx = ball_speed * math.cos(math.radians(direction))
-        vy = ball_speed * math.sin(math.radians(direction))
+    if ball_speed < 22.0:
+        ball_speed += 1
+    vx = ball_speed * math.cos(math.radians(direction))
+    vy = ball_speed * math.sin(math.radians(direction))
     ball.x += vx * dt
     ball.y += vy * dt
     hit_sound.play()
@@ -397,7 +407,7 @@ def line_animation(block):
         block.y = height + 120
 
 
-def reverse_pong():
+def catch():
     global left_paddle, right_paddle, ball, scored, scoreTime, ballTimer, left_paddle_up, left_paddle_down, \
         right_paddle_up, right_paddle_down
     left_paddle_up = pygame.Rect(left_paddle.x, 0, paddle_width, left_paddle.y)
@@ -437,11 +447,11 @@ def reverse_pong():
     color(right_paddle_down)
 
 
-def handball():
+def solitaire():
     return 0
 
 
-def pong_doubles():
+def super_pong():
     return 0
 
 
@@ -673,11 +683,11 @@ while True:
         if ballMoving:
             ball = ball_movement(ball)
         if game == 1:
-            reverse_pong()
+            catch()
         elif game == 2:
-            handball()
+            solitaire()
         elif game == 3:
-            pong_doubles()
+            super_pong()
         else:
             pong()
         color(ball)

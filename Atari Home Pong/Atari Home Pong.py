@@ -81,8 +81,8 @@ def paddle_collision(ball, paddle):
         ball_speed += 1
     vx = ball_speed * math.cos(math.radians(direction))
     vy = ball_speed * math.sin(math.radians(direction))
-    ball.x += vx
-    ball.y += vy
+    ball.x += vx * dt
+    ball.y += vy * dt
     hit_sound.play()
     return ball
 
