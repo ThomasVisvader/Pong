@@ -32,7 +32,6 @@ def right_score():
 def paddle_collision(ball, paddle):
     global vx, vy, ball_speed, direction, leftMoving
     if game == 1:
-        # vx *= -1
         if paddle == left_paddle_up or paddle == left_paddle_down:
             if paddle == left_paddle_up:
                 direction = 320
@@ -50,7 +49,14 @@ def paddle_collision(ball, paddle):
             leftMoving = True
             pygame.mouse.set_pos([width / 2, left_paddle.y])
     else:
-        c_point = ball.center[1] - paddle.center[1]
+        if game == 2:
+            tmp = ball.center[1] - paddle.top
+            paddle_num = tmp // paddle_height
+            tmp = paddle.top + (paddle_num * paddle_height)
+            paddle_center = tmp + (paddle_height // 2)
+            c_point = ball.center[1] - paddle_center
+        else:
+            c_point = ball.center[1] - paddle.center[1]
         c_point = c_point / (paddle_height / 2)
         if c_point < -1:
             ball.bottom = paddle.top
@@ -68,13 +74,15 @@ def paddle_collision(ball, paddle):
         else:
             alpha = 10
             inc = 10
-        if paddle == left_paddle:
-            leftMoving = False
-            pygame.mouse.set_pos([width / 2, right_paddle.y])
+        if paddle == left_paddle or paddle == left_paddle2:
+            if game != 2:
+                leftMoving = False
+                pygame.mouse.set_pos([width / 2, right_paddle.y])
             straight = 360
         else:
-            leftMoving = True
-            pygame.mouse.set_pos([width / 2, left_paddle.y])
+            if game != 2:
+                leftMoving = True
+                pygame.mouse.set_pos([width / 2, left_paddle.y])
             straight = 180
             alpha *= -1
             inc *= -1
@@ -109,8 +117,9 @@ def ball_movement(ball):
             right_score()
         else:
             left_score()
-        dirchoice = 1
-        leftMoving = False
+        if game != 2:
+            dirchoice = 1
+            leftMoving = False
     elif ball.left <= 0:
         if game == 1:
             left_score()
@@ -133,7 +142,7 @@ def ball_movement(ball):
 
 
 def move_up(paddle):
-    if paddle.top <= -70:
+    if game != 2 and paddle.top <= -70:
         paddle.top = -70
         return paddle
     paddle.y -= paddle_speed * dt
@@ -141,7 +150,7 @@ def move_up(paddle):
 
 
 def move_down(paddle):
-    if paddle.bottom >= height + 70:
+    if game != 2 and paddle.bottom >= height + 70:
         paddle.bottom = height + 70
         return paddle
     paddle.y += paddle_speed * dt
@@ -448,11 +457,79 @@ def catch():
 
 
 def solitaire():
-    return 0
+    global left_paddle, right_paddle, ball, scored, scoreTime, ballTimer, leftMoving
+    leftMoving = True
+    if controls == 'Key':
+        if leftMovingUp and not leftMovingDown:
+            left_paddle = move_up(left_paddle)
+        elif leftMovingDown and not leftMovingUp:
+            left_paddle = move_down(left_paddle)
+        if rightMovingUp and not rightMovingDown:
+            right_paddle = move_up(right_paddle)
+        elif rightMovingDown and not rightMovingUp:
+            right_paddle = move_down(right_paddle)
+    if ball.colliderect(left_paddle):
+        ball = paddle_collision(ball, left_paddle)
+    elif ball.colliderect(right_paddle):
+        ball = paddle_collision(ball, right_paddle)
+    if scored:
+        scored = False
+        make_score()
+        scoreTime = time.time()
+        if left_points == 15 or right_points == 15:
+            new_game(0)
+    if gameStarted and not ballMoving:
+        write_score()
+        ballTimer = time.time() - scoreTime
+    background()
+    color(left_paddle)
+    color(right_paddle)
 
 
 def super_pong():
-    return 0
+    global scored, gameStarted, scoreTime, ball, controls, left_paddle, right_paddle, left_paddle2, right_paddle2, \
+        ballTimer
+    left_paddle2.y = left_paddle.y
+    right_paddle2.y = right_paddle.y
+    right_paddle.x = rightx
+    if controls == 'Key':
+        if leftMovingUp and not leftMovingDown:
+            left_paddle = move_up(left_paddle)
+            left_paddle2 = move_up(left_paddle2)
+        elif leftMovingDown and not leftMovingUp:
+            left_paddle = move_down(left_paddle)
+            left_paddle2 = move_down(left_paddle2)
+        if rightMovingUp and not rightMovingDown:
+            right_paddle = move_up(right_paddle)
+            right_paddle2 = move_up(right_paddle2)
+        elif rightMovingDown and not rightMovingUp:
+            right_paddle = move_down(right_paddle)
+            right_paddle2 = move_down(right_paddle2)
+    if gameStarted:
+        if leftMoving:
+            if ball.colliderect(left_paddle):
+                ball = paddle_collision(ball, left_paddle)
+            elif ball.colliderect(left_paddle2):
+                ball = paddle_collision(ball, left_paddle2)
+        else:
+            if ball.colliderect(right_paddle):
+                ball = paddle_collision(ball, right_paddle)
+            elif ball.colliderect(right_paddle2):
+                ball = paddle_collision(ball, right_paddle2)
+    if scored:
+        scored = False
+        make_score()
+        scoreTime = time.time()
+        if left_points == 15 or right_points == 15:
+            new_game(0)
+    if gameStarted and not ballMoving:
+        write_score()
+        ballTimer = time.time() - scoreTime
+    background()
+    color(left_paddle)
+    color(left_paddle2)
+    color(right_paddle)
+    color(right_paddle2)
 
 
 def pong():
@@ -508,7 +585,7 @@ rightx = width - 115 - paddle_width
 righty = height // 2 - 15
 ballx = width // 2 - 5
 bally = height // 2 + 5
-paddle_speed = 10.0
+paddle_speed = 20.0
 ball_speed = 10.0
 yspeed = 0
 
@@ -519,11 +596,13 @@ ball.center = (ballx, bally)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
 right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
 
-
 left_paddle_up = pygame.Rect(left_paddle.x, 0, paddle_width, left_paddle.y)
 left_paddle_down = pygame.Rect(left_paddle.x, left_paddle.bottom, paddle_width, height - left_paddle.bottom)
 right_paddle_up = pygame.Rect(right_paddle.x, 0, paddle_width, right_paddle.y)
 right_paddle_down = pygame.Rect(right_paddle.x, right_paddle.bottom, paddle_width, height - right_paddle.bottom)
+
+left_paddle2 = pygame.Rect(558, lefty, paddle_width, paddle_height)
+right_paddle2 = pygame.Rect(688, righty, paddle_width, paddle_height)
 
 left_points = 0
 right_points = 0
@@ -575,10 +654,19 @@ while True:
             chosen = True
         else:
             intro(yspeed)
-            color(left_paddle_up)
-            color(left_paddle_down)
-            color(right_paddle_up)
-            color(right_paddle_down)
+            if game == 1:
+                color(left_paddle_up)
+                color(left_paddle_down)
+                color(right_paddle_up)
+                color(right_paddle_down)
+            elif game == 3:
+                color(left_paddle)
+                color(left_paddle2)
+                color(right_paddle)
+                color(right_paddle2)
+            else:
+                color(left_paddle)
+                color(right_paddle)
             color(ball)
         for event in pygame.event.get():
             if event.type == KEYUP:
@@ -595,12 +683,16 @@ while True:
                     pygame.quit()
                     sys.exit()
                 elif event.key == K_KP1:
+                    right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
                     game = 1
                 elif event.key == K_KP2:
+                    right_paddle = pygame.Rect(rightx, 0, paddle_width, height)
                     game = 2
                 elif event.key == K_KP3:
+                    right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
                     game = 3
                 elif event.key == K_KP4:
+                    right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
                     game = 4
             elif event.type == QUIT:
                 pygame.quit()
@@ -626,12 +718,16 @@ while True:
                 pygame.quit()
                 sys.exit()
             elif event.type == KEYUP and event.key == K_KP1:
+                right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
                 game = 1
             elif event.type == KEYUP and event.key == K_KP2:
+                right_paddle = pygame.Rect(rightx, 0, paddle_width, height)
                 game = 2
             elif event.type == KEYUP and event.key == K_KP3:
+                right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
                 game = 3
             elif event.type == KEYUP and event.key == K_KP4:
+                right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
                 game = 4
             if controls == 'Mouse':
                 if event.type == MOUSEMOTION:

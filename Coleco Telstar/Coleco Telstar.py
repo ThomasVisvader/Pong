@@ -346,7 +346,7 @@ bottomWall = pygame.Rect(0, height-12, width, 12)
 net = pygame.Rect(633, 0, paddle_width, height)
 ball = pygame.Rect(ballx, bally, ball_width, ball_height)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
-left_paddle2 = pygame.Rect(930, righty, paddle_width, paddle_height)
+left_paddle2 = pygame.Rect(930, lefty, paddle_width, paddle_height)
 right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
 right_paddle2 = pygame.Rect(320, righty, paddle_width, paddle_height)
 
