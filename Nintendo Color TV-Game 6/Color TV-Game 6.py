@@ -159,7 +159,7 @@ def make_score():
         else:
             scoreFont.render_to(score_screen, (428, 0), str(left_points), fgcolor=(255, 255, 255))
     else:
-        scoreFont.render_to(score_screen, (358, 0), 'l', fgcolor=(255, 255, 255))
+        scoreFont.render_to(score_screen, (382, 0), 'l', fgcolor=(255, 255, 255))
         if left_points - 10 == 1:
             scoreFont.render_to(score_screen, (498, 0), str(left_points - 10), fgcolor=(255, 255, 255))
         else:
@@ -170,7 +170,7 @@ def make_score():
         else:
             scoreFont.render_to(score_screen, (744, 0), str(right_points), fgcolor=(255, 255, 255))
     else:
-        scoreFont.render_to(score_screen, (674, 0), 'l', fgcolor=(255, 255, 255))
+        scoreFont.render_to(score_screen, (698, 0), 'l', fgcolor=(255, 255, 255))
         if right_points - 10 == 1:
             scoreFont.render_to(score_screen, (814, 0), str(right_points - 10), fgcolor=(255, 255, 255))
         else:
@@ -319,8 +319,8 @@ width = 1280
 screen = pygame.display.set_mode((width, height))
 score_screen = pygame.Surface((width, 255))
 handball_screen = pygame.Surface((width, 255))
-pygame.display.set_caption('Coleco Telstar')
-scoreFont = pygame.freetype.Font('text/colecoscore.ttf', 105)
+pygame.display.set_caption('Color TV-Game 6')
+scoreFont = pygame.freetype.Font('text/nintendo.ttf', 132)
 wall_hit_sound = pygame.mixer.Sound('sounds/wallhit.wav')
 score_sound = pygame.mixer.Sound('sounds/score.wav')
 paddle_hit_sound = pygame.mixer.Sound('sounds/paddlehit.wav')
