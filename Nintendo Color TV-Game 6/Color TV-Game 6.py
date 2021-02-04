@@ -127,12 +127,29 @@ def move_down(paddle):
     return paddle
 
 
+def draw_net():
+    for i in range(6):
+        pygame.draw.rect(screen, (255, 255, 255), (485, 35 + (i * 130), 30, 65))
+    # for i in range(15):
+    #     pygame.draw.rect(screen, (red, green, blue), (623, i * 68, 3, 34))
+    # pixel = 0
+    # for h in range(193, 199, 2):
+    #     for i in range(15):
+    #         pygame.draw.rect(screen, (red, green, blue), (625 + pixel, i * 68, 4, 34))
+    #     pixel += 4
+    #     for i in range(15):
+    #         pygame.draw.rect(screen, (red, green, blue), (625 + pixel, i * 68, 5, 34))
+    #     pixel += 5
+
+
 def draw_walls():
-    pygame.draw.rect(screen, (255, 255, 255), (0, 0, 20, 12))
-    pygame.draw.rect(screen, (255, 255, 255), (0, height - 12, 20, 12))
-    for i in range(36):
-        pygame.draw.rect(screen, (255, 255, 255), (30 + i * 35, 0, 25, 12))
-        pygame.draw.rect(screen, (255, 255, 255), (30 + i * 35, height - 12, 25, 12))
+    pygame.draw.rect(screen, (255, 255, 255), (0, 0, width, 20))
+    pygame.draw.rect(screen, (255, 255, 255), (0, height-20, width, 20))
+    # pygame.draw.rect(screen, (255, 255, 255), (0, 0, 20, 12))
+    # pygame.draw.rect(screen, (255, 255, 255), (0, height - 12, 20, 12))
+    # for i in range(36):
+    #     pygame.draw.rect(screen, (255, 255, 255), (30 + i * 35, 0, 25, 12))
+    #     pygame.draw.rect(screen, (255, 255, 255), (30 + i * 35, height - 12, 25, 12))
 
 
 def draw_hockey_walls():
@@ -152,29 +169,29 @@ def draw_handball_wall():
 
 
 def make_score():
-    score_screen.fill((0, 0, 0))
+    score_screen.fill(TENNISORANGE)
     if left_points < 10:
         if left_points == 1:
-            scoreFont.render_to(score_screen, (498, 0), str(left_points), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (144, 0), str(left_points), fgcolor=(255, 255, 255))
         else:
-            scoreFont.render_to(score_screen, (428, 0), str(left_points), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (70, 0), str(left_points), fgcolor=(255, 255, 255))
     else:
-        scoreFont.render_to(score_screen, (382, 0), 'l', fgcolor=(255, 255, 255))
+        scoreFont.render_to(score_screen, (30, 0), 'l', fgcolor=(255, 255, 255))
         if left_points - 10 == 1:
-            scoreFont.render_to(score_screen, (498, 0), str(left_points - 10), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (144, 0), str(left_points - 10), fgcolor=(255, 255, 255))
         else:
-            scoreFont.render_to(score_screen, (428, 0), str(left_points - 10), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (70, 0), str(left_points - 10), fgcolor=(255, 255, 255))
     if right_points < 10:
         if right_points == 1:
-            scoreFont.render_to(score_screen, (814, 0), str(right_points), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (844, 0), str(right_points), fgcolor=(255, 255, 255))
         else:
-            scoreFont.render_to(score_screen, (744, 0), str(right_points), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (770, 0), str(right_points), fgcolor=(255, 255, 255))
     else:
-        scoreFont.render_to(score_screen, (698, 0), 'l', fgcolor=(255, 255, 255))
+        scoreFont.render_to(score_screen, (728, 0), 'l', fgcolor=(255, 255, 255))
         if right_points - 10 == 1:
-            scoreFont.render_to(score_screen, (814, 0), str(right_points - 10), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (844, 0), str(right_points - 10), fgcolor=(255, 255, 255))
         else:
-            scoreFont.render_to(score_screen, (744, 0), str(right_points - 10), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (770, 0), str(right_points - 10), fgcolor=(255, 255, 255))
     write_score()
 
 
@@ -185,7 +202,7 @@ def write_score():
         pygame.draw.rect(handball_screen, (0, 0, 0), (724, 0, 200, 200))
         screen.blit(handball_screen, (50, 32))
     else:
-        screen.blit(score_screen, (50, 32))
+        screen.blit(score_screen, (50, 100))
 
 
 def new_game(type):
@@ -238,7 +255,8 @@ def tennis():
             new_game(0)
     draw_walls()
     write_score()
-    pygame.draw.rect(screen, (255, 255, 255), net)
+    draw_net()
+    # pygame.draw.rect(screen, (255, 255, 255), net)
     pygame.draw.rect(screen, (255, 255, 255), left_paddle)
     pygame.draw.rect(screen, (255, 255, 255), right_paddle)
 
@@ -278,10 +296,11 @@ def hockey():
         scoreTime = time.time()
         if left_points == 15 or right_points == 15:
             new_game(0)
-    write_score()
+    # write_score()
     draw_walls()
     draw_hockey_walls()
-    pygame.draw.rect(screen, (255, 255, 255), net)
+    draw_net()
+    # pygame.draw.rect(screen, (255, 255, 255), net)
     pygame.draw.rect(screen, (255, 255, 255), left_paddle)
     pygame.draw.rect(screen, (255, 255, 255), right_paddle)
     pygame.draw.rect(screen, (255, 255, 255), left_paddle2)
@@ -306,7 +325,7 @@ def handball():
         scoreTime = time.time()
         if left_points == 15 or right_points == 15:
             new_game(0)
-    write_score()
+    # write_score()
     draw_handball_wall()
     draw_walls()
     pygame.draw.rect(screen, (255, 255, 255), right_paddle)
@@ -314,9 +333,11 @@ def handball():
 
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()
-height = 960
-width = 1280
-screen = pygame.display.set_mode((width, height))
+height = 810
+width = 1000
+display = pygame.display.set_mode((1280, 960))
+display.fill((0, 0, 255))
+screen = pygame.Surface((width, height))
 score_screen = pygame.Surface((width, 255))
 handball_screen = pygame.Surface((width, 255))
 pygame.display.set_caption('Color TV-Game 6')
@@ -328,22 +349,24 @@ paddle_hit_sound = pygame.mixer.Sound('sounds/paddlehit.wav')
 FPS = 60
 fpsClock = pygame.time.Clock()
 
-paddle_height = 150
+paddle_height = 130
 paddle_width = 30
-ball_height = 27
-ball_width = 33
-leftx = 32
+ball_height = 20
+ball_width = 26
+leftx = 50
 lefty = height // 2
-rightx = width - 32 - paddle_width
+rightx = width - 50 - paddle_width
 righty = height // 2
 ballx = -50
 bally = -50
 paddle_speed = 20.0
 ball_speed = 15.0
 
+TENNISORANGE = (169, 115, 93)
+
 topWall = pygame.Rect(0, 0, width, 12)
 bottomWall = pygame.Rect(0, height-12, width, 12)
-net = pygame.Rect(633, 0, paddle_width, height)
+# net = pygame.Rect(633, 0, paddle_width, height)
 ball = pygame.Rect(ballx, bally, ball_width, ball_height)
 left_paddle = pygame.Rect(leftx, lefty, paddle_width, paddle_height)
 left_paddle2 = pygame.Rect(930, lefty, paddle_width, paddle_height)
@@ -382,7 +405,7 @@ while True:
     dt = time.time() - lastTime
     dt *= FPS
     lastTime = time.time()
-    screen.fill((0, 0, 0))
+    screen.fill(TENNISORANGE)
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
@@ -484,5 +507,6 @@ while True:
     if not ballMoving:
         ballTimer = time.time() - scoreTime
     pygame.draw.rect(screen, (255, 255, 255), ball)
+    display.blit(screen, (140, 65))
     pygame.display.update()
     fpsClock.tick(FPS)
