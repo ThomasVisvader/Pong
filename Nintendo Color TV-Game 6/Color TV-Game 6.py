@@ -129,7 +129,7 @@ def move_down(paddle):
 
 def draw_net():
     for i in range(6):
-        pygame.draw.rect(screen, (255, 255, 255), (485, 35 + (i * 130), 30, 65))
+        pygame.draw.rect(screen, TENNISNET, (485, 35 + (i * 130), 30, 65))
     # for i in range(15):
     #     pygame.draw.rect(screen, (red, green, blue), (623, i * 68, 3, 34))
     # pixel = 0
@@ -145,11 +145,42 @@ def draw_net():
 def draw_walls():
     pygame.draw.rect(screen, (255, 255, 255), (0, 0, width, 20))
     pygame.draw.rect(screen, (255, 255, 255), (0, height-20, width, 20))
+    pixel = 5
+    color_walls(215, 175, 59)
+    pygame.draw.rect(screen, TENNISGREEN, (0, 20, 8, height - 40))
+    pygame.draw.rect(screen, TENNISRED, (width - 8, 20, 8, height - 40))
+    pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, 2))
+    pygame.draw.rect(screen, (0, 0, 0), (0, height - 2, width, 2))
+    # for i in range(100):
+    #     pygame.draw.rect(screen, (61, 211, 0), (0, pixel, 8, 5))
+    #     pygame.draw.rect(screen, (87, 35, 1), (width - 8, pixel, 8, 5))
+    #     pixel += 8
+    # pixel = 0
+    # for i in range(143):
+    #     pygame.draw.rect(screen, (0, 0, 0), (pixel, 0, 5, 5))
+    #     pygame.draw.rect(screen, (0, 0, 0), (pixel, height - 4, 5, 5))
+    #     pixel += 8
     # pygame.draw.rect(screen, (255, 255, 255), (0, 0, 20, 12))
     # pygame.draw.rect(screen, (255, 255, 255), (0, height - 12, 20, 12))
     # for i in range(36):
     #     pygame.draw.rect(screen, (255, 255, 255), (30 + i * 35, 0, 25, 12))
     #     pygame.draw.rect(screen, (255, 255, 255), (30 + i * 35, height - 12, 25, 12))
+
+
+def color_walls(r, g, b):
+    pixel = 0
+    for i in range(100):
+        if i % 3 == 0:
+            g += 1
+        if i % 5 == 0:
+            b += 1
+        pygame.draw.rect(screen, (r, g, b), (pixel, 0, 1, 20))
+        pygame.draw.rect(screen, (r, g, b), (pixel, height - 20, 1, 20))
+        pixel += 1
+    for i in range(900):
+        pygame.draw.rect(screen, (r, g, b), (pixel, 0, 1, 20))
+        pygame.draw.rect(screen, (r, g, b), (pixel, height - 20, 1, 20))
+        pixel += 1
 
 
 def draw_hockey_walls():
@@ -172,26 +203,26 @@ def make_score():
     score_screen.fill(TENNISORANGE)
     if left_points < 10:
         if left_points == 1:
-            scoreFont.render_to(score_screen, (144, 0), str(left_points), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (144, 0), str(left_points), fgcolor=TENNISSCORE)
         else:
-            scoreFont.render_to(score_screen, (70, 0), str(left_points), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (70, 0), str(left_points), fgcolor=TENNISSCORE)
     else:
-        scoreFont.render_to(score_screen, (30, 0), 'l', fgcolor=(255, 255, 255))
+        scoreFont.render_to(score_screen, (30, 0), 'l', fgcolor=TENNISSCORE)
         if left_points - 10 == 1:
-            scoreFont.render_to(score_screen, (144, 0), str(left_points - 10), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (144, 0), str(left_points - 10), fgcolor=TENNISSCORE)
         else:
-            scoreFont.render_to(score_screen, (70, 0), str(left_points - 10), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (70, 0), str(left_points - 10), fgcolor=TENNISSCORE)
     if right_points < 10:
         if right_points == 1:
-            scoreFont.render_to(score_screen, (844, 0), str(right_points), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (844, 0), str(right_points), fgcolor=TENNISSCORE)
         else:
-            scoreFont.render_to(score_screen, (770, 0), str(right_points), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (770, 0), str(right_points), fgcolor=TENNISSCORE)
     else:
-        scoreFont.render_to(score_screen, (728, 0), 'l', fgcolor=(255, 255, 255))
+        scoreFont.render_to(score_screen, (728, 0), 'l', fgcolor=TENNISSCORE)
         if right_points - 10 == 1:
-            scoreFont.render_to(score_screen, (844, 0), str(right_points - 10), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (844, 0), str(right_points - 10), fgcolor=TENNISSCORE)
         else:
-            scoreFont.render_to(score_screen, (770, 0), str(right_points - 10), fgcolor=(255, 255, 255))
+            scoreFont.render_to(score_screen, (770, 0), str(right_points - 10), fgcolor=TENNISSCORE)
     write_score()
 
 
@@ -230,6 +261,7 @@ def new_game(type):
 
 
 def tennis():
+    display.fill(TENNISBLUE)
     global scored, scoreTime, ballMoving, ballTimer, ball, vx, vy, left_paddle, right_paddle, controls, \
         leftMovingUp, leftMovingDown, rightMovingUp, rightMovingDown, gameStarted, ballSpawning, rightx
     right_paddle.x = rightx
@@ -257,12 +289,13 @@ def tennis():
     write_score()
     draw_net()
     # pygame.draw.rect(screen, (255, 255, 255), net)
-    pygame.draw.rect(screen, (255, 255, 255), left_paddle)
-    pygame.draw.rect(screen, (255, 255, 255), right_paddle)
+    pygame.draw.rect(screen, TENNISPADDLES, left_paddle)
+    pygame.draw.rect(screen, TENNISPADDLES, right_paddle)
 
 
 def hockey():
     global scored, gameStarted, scoreTime, ball, controls, left_paddle, right_paddle, left_paddle2, right_paddle2
+    display.fill((0, 255, 0))
     controls = 'Key'
     left_paddle2.y = left_paddle.y
     right_paddle2.y = right_paddle.y
@@ -336,9 +369,9 @@ ctypes.windll.user32.SetProcessDPIAware()
 height = 810
 width = 1000
 display = pygame.display.set_mode((1280, 960))
-display.fill((0, 0, 255))
+display.fill((45, 97, 121))
 screen = pygame.Surface((width, height))
-score_screen = pygame.Surface((width, 255))
+score_screen = pygame.Surface((900, 255))
 handball_screen = pygame.Surface((width, 255))
 pygame.display.set_caption('Color TV-Game 6')
 scoreFont = pygame.freetype.Font('text/nintendo.ttf', 132)
@@ -362,7 +395,13 @@ bally = -50
 paddle_speed = 20.0
 ball_speed = 15.0
 
-TENNISORANGE = (169, 115, 93)
+TENNISORANGE = (129, 102, 0)
+TENNISBLUE = (45, 97, 121)
+TENNISNET = (203, 173, 35)
+TENNISSCORE = (199, 180, 198)
+TENNISGREEN = (61, 211, 0)
+TENNISRED = (138, 18, 66)
+TENNISPADDLES = (163, 192, 68)
 
 topWall = pygame.Rect(0, 0, width, 12)
 bottomWall = pygame.Rect(0, height-12, width, 12)
@@ -430,7 +469,7 @@ while True:
             game = 3
         elif event.type == KEYUP and event.key == K_1:
             ball_speed = 15.0
-            paddle_height = 150
+            paddle_height = 130
             left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle = pygame.Rect(rightx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             left_paddle2 = pygame.Rect(930, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
@@ -444,7 +483,7 @@ while True:
             right_paddle2 = pygame.Rect(320, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
         elif event.type == KEYUP and event.key == K_3:
             ball_speed = 29.0
-            paddle_height = 150
+            paddle_height = 130
             left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle = pygame.Rect(rightx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             left_paddle2 = pygame.Rect(930, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
@@ -506,7 +545,7 @@ while True:
         handball()
     if not ballMoving:
         ballTimer = time.time() - scoreTime
-    pygame.draw.rect(screen, (255, 255, 255), ball)
+    pygame.draw.rect(screen, (203, 173, 35), ball)
     display.blit(screen, (140, 65))
     pygame.display.update()
     fpsClock.tick(FPS)
