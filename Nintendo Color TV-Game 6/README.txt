@@ -5,8 +5,6 @@ SHIFT - Mouse/Keyboard
 LCTRL - Size player 1
 RCTRL - Size player 2
 LALT - Ball speed
-RALT - Singles/Doubles
+TAB - Singles/Doubles
 
-TODO
-changing color offscreen
-Sounds
+

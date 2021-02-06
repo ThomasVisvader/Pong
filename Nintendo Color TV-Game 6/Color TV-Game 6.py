@@ -9,7 +9,7 @@ from pygame.locals import *
 
 
 def left_score():
-    global left_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, ballSpawning
+    global left_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, ballSpawning, scoreSound
     left_points += 1
     ballMoving = False
     ball.center = (width + 50, 300)
@@ -17,19 +17,19 @@ def left_score():
     scored = True
     leftMoving = False
     ballSpawning = True
-    score_sound.play()
+    scoreSound = False
 
 
 def right_score():
-    global right_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, ballSpawning
+    global right_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, ballSpawning, scoreSound
     right_points += 1
     ballMoving = False
     ball.center = (-50, 300)
     dirchoice = 0
-    score_sound.play()
     leftMoving = True
     ballSpawning = True
     scored = True
+    scoreSound = False
 
 
 def paddle_collision(ball, paddle):
@@ -77,7 +77,7 @@ def paddle_collision(ball, paddle):
 
 
 def ball_movement(ball):
-    global vx, vy, ballSpawning, game
+    global vx, vy, ballSpawning, game, scoreSound
     if ball.right >= 1280:
         left_score()
     elif ball.left <= 0:
@@ -85,6 +85,10 @@ def ball_movement(ball):
     elif ballSpawning and 300 <= ball.centerx <= 800:
         ballSpawning = False
     else:
+        if ball.right >= 1140 or ball.left <= 140:
+            if not scoreSound:
+                score_sound.play()
+                scoreSound = True
         if ball.top <= 85:
             ball.top = 85
             vy *= -1
@@ -112,16 +116,16 @@ def ball_movement(ball):
 
 
 def move_up(paddle):
-    if paddle.top <= -70:
-        paddle.top = -70
+    if paddle.top <= -65:
+        paddle.top = -65
         return paddle
     paddle.y -= paddle_speed * dt
     return paddle
 
 
 def move_down(paddle):
-    if paddle.bottom >= height + 70:
-        paddle.bottom = height + 70
+    if paddle.bottom >= 1005:
+        paddle.bottom = 1005
         return paddle
     paddle.y += paddle_speed * dt
     return paddle
@@ -172,6 +176,37 @@ def draw_handball_wall():
     for i in range(96):
         pygame.draw.rect(screen, (255, 255, 255), (0, i*10, 30, 8))
         pygame.draw.rect(screen, (0, 0, 0), (0, (i * 10) + 8, 30, 2))
+
+
+def color_change(object, case):
+    p = pygame.PixelArray(display)
+    if case == 1:
+        if object.top >= 0:
+            p[object.x:object.x + object.width, object.top:65] = TENNISALT
+        else:
+            p[object.x:object.x + object.width, 0:65] = TENNISALT
+    elif case == 2:
+        if object.bottom <= 960:
+            p[object.x:object.x + object.width, 875:object.bottom] = TENNISALT
+        else:
+            p[object.x:object.x + object.width, 875:960] = TENNISALT
+    elif case == 3:
+        if object.left >= 0:
+            if object.right >= 140:
+                p[object.left:140, object.top:object.bottom] = TENNISBALLALT
+            else:
+                p[object.left:object.right, object.top:object.bottom] = TENNISBALLALT
+        else:
+            p[0:object.right, object.top:object.bottom] = TENNISBALLALT
+    elif case == 4:
+        if object.right <= 1280:
+            if object.left <= 1140:
+                p[1140:object.right, object.top:object.bottom] = TENNISBALLALT
+            else:
+                p[object.left:object.right, object.top:object.bottom] = TENNISBALLALT
+        else:
+            p[object.left:1280, object.top:object.bottom] = TENNISBALLALT
+    del p
 
 
 def make_score():
@@ -279,6 +314,22 @@ def tennis():
     if doubles:
         pygame.draw.rect(display, TENNISPADDLES, left_paddle2)
         pygame.draw.rect(display, TENNISPADDLES, right_paddle2)
+    if left_paddle.top <= 65:
+        color_change(left_paddle, 1)
+        if doubles:
+            color_change(left_paddle2, 1)
+    elif left_paddle.bottom >= 875:
+        color_change(left_paddle, 2)
+        if doubles:
+            color_change(left_paddle2, 2)
+    if right_paddle.top <= 65:
+        color_change(right_paddle, 1)
+        if doubles:
+            color_change(right_paddle2, 1)
+    elif right_paddle.bottom >= 875:
+        color_change(right_paddle, 2)
+        if doubles:
+            color_change(right_paddle2, 2)
 
 
 def hockey():
@@ -378,7 +429,7 @@ rightx = 1090 - paddle_width
 righty = height // 2
 ballx = -50
 bally = -50
-paddle_speed = 20.0
+paddle_speed = 11.0
 ball_speed = 15.0
 
 TENNISORANGE = (129, 102, 0)
@@ -388,6 +439,8 @@ TENNISSCORE = (199, 180, 198)
 TENNISGREEN = (61, 211, 0)
 TENNISRED = (138, 18, 66)
 TENNISPADDLES = (163, 192, 68)
+TENNISALT = (72, 92, 72)
+TENNISBALLALT = (77, 129, 160)
 
 topWall = pygame.Rect(0, 0, width, 12)
 bottomWall = pygame.Rect(0, height-12, width, 12)
@@ -417,6 +470,7 @@ gameStarted = False
 ballSpawning = False
 doubles = False
 blink = True
+scoreSound = False
 
 make_score()
 dirchoice = random.choice([0, 1])
@@ -491,7 +545,7 @@ while True:
                     ball_speed = 25.0
                 else:
                     ball_speed = 15.0
-            elif event.type == KEYUP and event.key == K_RALT:
+            elif event.type == KEYUP and event.key == K_TAB:
                 doubles = not doubles
             elif event.type == KEYUP and event.key == K_LCTRL:
                 if left_paddle.height == 130:
@@ -568,5 +622,9 @@ while True:
             ballTimer = time.time() - scoreTime
         else:
             pygame.draw.rect(display, (203, 173, 35), ball)
+            if ball.left <= 140:
+                color_change(ball, 3)
+            elif ball.right >= 1140:
+                color_change(ball, 4)
     pygame.display.update()
     fpsClock.tick(FPS)
