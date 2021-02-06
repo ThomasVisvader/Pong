@@ -1,0 +1,12 @@
+Size player 1(big/small)	Size player 2(big/small)	Ball speed(slow/fast)	Singles/Doubles
+ON/OFF				RESET				Game Modes
+
+SHIFT - Mouse/Keyboard
+LCTRL - Size player 1
+RCTRL - Size player 2
+LALT - Ball speed
+RALT - Singles/Doubles
+
+TODO
+changing color offscreen
+Sounds
