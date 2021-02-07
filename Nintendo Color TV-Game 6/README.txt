@@ -7,4 +7,4 @@ RCTRL - Size player 2
 LALT - Ball speed
 TAB - Singles/Doubles
 
-
+1 should be volleyball, 2 should be tennis, 3 should be hockey
