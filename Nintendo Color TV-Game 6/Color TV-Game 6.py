@@ -9,7 +9,7 @@ from pygame.locals import *
 
 
 def left_score():
-    global left_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, ballSpawning, scoreSound
+    global left_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, ballSpawning, scoreSound, bounceCount
     left_points += 1
     ballMoving = False
     ball.center = (width + 50, 300)
@@ -18,10 +18,11 @@ def left_score():
     leftMoving = False
     ballSpawning = True
     scoreSound = False
+    bounceCount = 0
 
 
 def right_score():
-    global right_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, ballSpawning, scoreSound
+    global right_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, ballSpawning, scoreSound, bounceCount
     right_points += 1
     ballMoving = False
     ball.center = (-50, 300)
@@ -30,10 +31,11 @@ def right_score():
     ballSpawning = True
     scored = True
     scoreSound = False
+    bounceCount = 0
 
 
-def paddle_collision(ball, paddle):
-    global vx, vy, ball_speed, direction, leftMoving, game
+def paddle_collision(ball, paddle, color):
+    global vx, vy, ball_speed, direction, leftMoving, game, bounceCount
     alpha = 50
     c_point = ball.center[1] - paddle.center[1]
     c_point = c_point / (paddle_height / 2)
@@ -44,43 +46,52 @@ def paddle_collision(ball, paddle):
         ball.top = paddle.bottom
         c_point = 1
     angle = c_point * alpha
-    if paddle == left_paddle or paddle == left_paddle2:
-        if c_point != -1 and c_point != 1:
-            ball.left = paddle.right
-        if angle < 0:
-            direction = 360 + angle
-        else:
-            direction = angle
-        leftMoving = False
-        if game != 3:
+    if paddle == left_paddle or paddle == left_paddle2 or (game == 3 and color == 0):
+        if color == 2 or (color == 0 and vx < 0 and bounceCount < 10):
+            if c_point != -1 and c_point != 1:
+                ball.left = paddle.right
+            if angle < 0:
+                direction = 360 + angle
+            else:
+                direction = angle
+            leftMoving = False
             pygame.mouse.set_pos([width / 2, right_paddle.y])
+            if paddle != left_paddle and paddle != left_paddle2:
+                bounceCount += 1
+            else:
+                bounceCount = 0
     else:
-        if c_point != -1 and c_point != 1:
-            ball.right = paddle.left
-        if angle == 0:
-            direction = 180
-        else:
-            direction = 180 - angle
-        leftMoving = True
-        if game != 3:
+        if color == 2 or (color == 1 and vx > 0 and bounceCount < 10):
+            if c_point != -1 and c_point != 1:
+                ball.right = paddle.left
+            if angle == 0:
+                direction = 180
+            else:
+                direction = 180 - angle
+            leftMoving = True
             pygame.mouse.set_pos([width / 2, left_paddle.y])
+            if paddle != right_paddle and paddle != right_paddle2:
+                bounceCount += 1
+            else:
+                bounceCount = 0
     if 181 <= direction <= 185:
         direction = 180
     elif 355 <= direction <= 359:
         direction = 0
     vx = ball_speed * math.cos(math.radians(direction))
     vy = ball_speed * math.sin(math.radians(direction))
-    ball.x += vx
-    ball.y += vy
+    # ball.x += vx
+    # ball.y += vy
     paddle_hit_sound.play()
+    print(bounceCount)
     return ball
 
 
 def ball_movement(ball):
     global vx, vy, ballSpawning, game, scoreSound
-    if ball.right >= 1280:
+    if ball.right >= 1280 or ball.top <= ball.height or ball.bottom >= 960:
         left_score()
-    elif ball.left <= 0:
+    elif ball.left <= 0 or ball.top <= ball.height or ball.bottom >= 960:
         right_score()
     elif ballSpawning and 300 <= ball.centerx <= 800:
         ballSpawning = False
@@ -89,11 +100,11 @@ def ball_movement(ball):
             if not scoreSound:
                 score_sound.play()
                 scoreSound = True
-        if ball.top <= 85:
+        if ball.top <= 85 and not scoreSound:
             ball.top = 85
             vy *= -1
             wall_hit_sound.play()
-        elif ball.bottom >= 855:
+        elif ball.bottom >= 855 and not scoreSound:
             ball.bottom = 855
             vy *= -1
             wall_hit_sound.play()
@@ -107,10 +118,6 @@ def ball_movement(ball):
                     ball.right = 1110
                     vx *= -1
                     wall_hit_sound.play()
-        elif game == 3 and ball.left <= 30:
-            ball.left = 30
-            vx *= -1
-            wall_hit_sound.play()
         ball.x += vx * dt
         ball.y += vy * dt
     return ball
@@ -166,6 +173,11 @@ def color_walls(rgb):
                 r += 1
             if i % 2 == 0:
                 b += 1
+        elif game == 3:
+            if i % 4 == 0 and r < 255:
+                r += 1
+            if g % 3 == 0:
+                g += 1
         if i < 30 and game == 2:
             pygame.draw.rect(screen, (r, g, b), (pixel, 0, 1, 258))
             pygame.draw.rect(screen, (r, g, b), (pixel, 550, 1, 258))
@@ -183,17 +195,13 @@ def color_walls(rgb):
         pixel += 1
 
 
-# def draw_hockey_walls():
-#     pygame.draw.rect(screen, (255, 255, 255), (0, 2, 30, 258))
-#     pygame.draw.rect(screen, (255, 255, 255), (0, 550, 30, 258))
-#     pygame.draw.rect(screen, (255, 255, 255), (width - 30, 2, 30, 258))
-#     pygame.draw.rect(screen, (255, 255, 255), (width - 30, 550, 30, 258))
-
-
-def draw_handball_wall():
-    for i in range(96):
-        pygame.draw.rect(screen, (255, 255, 255), (0, i*10, 30, 8))
-        pygame.draw.rect(screen, (0, 0, 0), (0, (i * 10) + 8, 30, 2))
+def draw_volleyball_net():
+    for i in range(2):
+        for j in range(12):
+            if i == 0:
+                pygame.draw.rect(display, (204, 75, 73), net[i][j])
+            else:
+                pygame.draw.rect(display, (48, 174, 24), net[i][j])
 
 
 def color_change(object, case):
@@ -256,12 +264,12 @@ def make_score():
 
 def write_score():
     global game
-    if game == 3:
-        handball_screen.blit(score_screen, (0, 0))
-        pygame.draw.rect(handball_screen, (0, 0, 0), (724, 0, 200, 200))
-        screen.blit(handball_screen, (50, 32))
-    else:
-        screen.blit(score_screen, (50, 100))
+    # if game == 3:
+    #     handball_screen.blit(score_screen, (0, 0))
+    #     pygame.draw.rect(handball_screen, (0, 0, 0), (724, 0, 200, 200))
+    #     screen.blit(handball_screen, (50, 32))
+    # else:
+    screen.blit(score_screen, (50, 100))
 
 
 def new_game(type):
@@ -304,14 +312,19 @@ def pong():
     left_paddle2.y = left_paddle.y
     right_paddle2.y = right_paddle.y
     if gameStarted and not ballSpawning and ball.colliderect(left_paddle):
-        ball = paddle_collision(ball, left_paddle)
+        ball = paddle_collision(ball, left_paddle, 2)
     elif gameStarted and not ballSpawning and ball.colliderect(right_paddle):
-        ball = paddle_collision(ball, right_paddle)
+        ball = paddle_collision(ball, right_paddle, 2)
     if doubles:
         if gameStarted and not ballSpawning and ball.colliderect(left_paddle2):
-            ball = paddle_collision(ball, left_paddle2)
+            ball = paddle_collision(ball, left_paddle2, 2)
         elif gameStarted and not ballSpawning and ball.colliderect(right_paddle2):
-            ball = paddle_collision(ball, right_paddle2)
+            ball = paddle_collision(ball, right_paddle2, 2)
+    if game == 3 and (ball.right >= 410 or ball.left <= 555):
+        for i in range(2):
+            for j in range(12):
+                if ball.colliderect(net[i][j]):
+                    ball = paddle_collision(ball, net[i][j], i)
     if scored:
         scored = False
         if gameStarted:
@@ -367,28 +380,13 @@ def hockey():
     doubles_check()
 
 
-def handball():
-    global controls, rightMovingUp, rightMovingDown, right_paddle, scored, gameStarted, scoreTime, leftMoving, ball
-    right_paddle.x = 925
-    leftMoving = False
-    if controls == 'Key':
-        if rightMovingUp and not rightMovingDown:
-            right_paddle = move_up(right_paddle)
-        elif rightMovingDown and not rightMovingUp:
-            right_paddle = move_down(right_paddle)
-    if gameStarted and not ballSpawning and ball.colliderect(right_paddle):
-        ball = paddle_collision(ball, right_paddle)
-    if scored:
-        scored = False
-        if gameStarted:
-            make_score()
-        scoreTime = time.time()
-        if left_points == 15 or right_points == 15:
-            new_game(0)
-    # write_score()
-    draw_handball_wall()
+def volleyball():
+    pong()
     draw_walls()
-    pygame.draw.rect(screen, (255, 255, 255), right_paddle)
+    draw_goals()
+    display.blit(screen, (140, 65))
+    draw_volleyball_net()
+    doubles_check()
 
 
 pygame.init()
@@ -427,7 +425,9 @@ ball_speed = 15.0
 color_list = [[(129, 102, 0), (45, 97, 121), (203, 173, 35), (199, 180, 198), (61, 211, 0), (138, 18, 66),
                (163, 192, 68), (72, 92, 72), (77, 129, 160), (215, 175, 59)],
               [(24, 182, 44), (127, 110, 107), (94, 240, 109), (174, 251, 255), (75, 86, 95), (81, 188, 41),
-               (255, 159, 255), (156, 89, 128), (187, 164, 181), (152, 255, 141)]]
+               (255, 159, 255), (156, 89, 128), (187, 164, 181), (152, 255, 141)],
+              [(161, 61, 236), (25, 181, 55), (211, 101, 255), (237, 253, 132), (132, 104, 106), (64, 140, 175),
+               (188, 199, 255), (79, 125, 174), (89, 239, 113), (231, 155, 255)]]
 
 
 topWall = pygame.Rect(0, 0, width, 12)
@@ -446,6 +446,7 @@ scoreTimer = 0
 dt = 0
 game = 1
 blinkTime = time.time()
+bounceCount = 0
 
 controls = 'Mouse'
 leftMovingUp = False
@@ -466,6 +467,14 @@ if dirchoice == 0:
     leftMoving = True
 else:
     leftMoving = False
+
+# 0 - red, 1 - green
+net = [[], []]
+for i in range(6):
+    net[0].append(pygame.Rect(555, 160 + (i * 129), 32, 25))
+    net[0].append(pygame.Rect(651, 160 + (i * 129), 32, 25))
+    net[1].append(pygame.Rect(597, 95 + (i * 129), 32, 25))
+    net[1].append(pygame.Rect(693, 95 + (i * 129), 32, 25))
 
 pygame.mouse.set_cursor((8, 8), (0, 0), (0, 0, 0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0, 0, 0))
 pygame.mouse.set_pos([0, 0])
@@ -539,6 +548,8 @@ while True:
                 make_score()
             elif event.type == KEYUP and event.key == K_KP3:
                 game = 3
+                left_paddle2.x = left_paddle.x + 285
+                right_paddle2.x = right_paddle.x - 285
                 make_score()
             elif event.type == KEYUP and event.key == K_LALT:
                 if ball_speed == 15.0:
@@ -617,7 +628,7 @@ while True:
         elif game == 2:
             hockey()
         else:
-            handball()
+            volleyball()
         if not ballMoving:
             ballTimer = time.time() - scoreTime
         else:
