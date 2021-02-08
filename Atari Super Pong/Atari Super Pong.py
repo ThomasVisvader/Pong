@@ -367,7 +367,7 @@ def get_pixel_color(x):
 def new_game(type):
     screen.fill((0, 0, 0))
     global left_points, right_points, leftMovingUp, leftMovingDown, rightMovingUp, rightMovingDown, \
-        gameStarted, ball, ballTimer, ballMoving, leftMoving, dirchoice
+        gameStarted, ball, ballTimer, ballMoving, leftMoving, dirchoice, introTimer
     if type == 0:
         gameStarted = False
     ball.center = (ballx, bally)
@@ -379,6 +379,7 @@ def new_game(type):
     rightMovingUp = False
     rightMovingDown = False
     ballMoving = False
+    introTimer = time.time()
     if leftMoving:
         dirchoice = 0
     else:
@@ -572,6 +573,7 @@ scoreFont = pygame.freetype.Font('text/Cone.ttf', 420)
 score_sound = pygame.mixer.Sound('sounds/score.wav')
 hit_sound = pygame.mixer.Sound('sounds/hit.wav')
 spawn_sound = pygame.mixer.Sound('sounds/spawn.wav')
+intro_sound = pygame.mixer.Sound('sounds/intro.wav')
 
 FPS = 60
 fpsClock = pygame.time.Clock()
@@ -609,6 +611,7 @@ right_points = 0
 ballTimer = 0
 dt = 0
 game = 1
+introTimer = time.time()
 
 controls = 'Mouse'
 leftMovingUp = False
@@ -648,6 +651,9 @@ while True:
     dt *= FPS
     lastTime = time.time()
     if not gameStarted:
+        if time.time() - introTimer >= 4:
+            intro_sound.play()
+            introTimer = time.time()
         if not chosen:
             FPS = random.choice([60, 90, 120, 150])
             yspeed = random.choice([1, 2, 5, 10])
