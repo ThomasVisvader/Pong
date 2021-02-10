@@ -246,22 +246,18 @@ def tennis():
 def hockey():
     global scored, gameStarted, scoreTime, ball, controls, left_paddle, right_paddle, left_paddle2, right_paddle2
     controls = 'Key'
-    left_paddle2.y = left_paddle.y
-    right_paddle2.y = right_paddle.y
     right_paddle.x = rightx
     if controls == 'Key':
         if leftMovingUp and not leftMovingDown:
             left_paddle = move_up(left_paddle)
-            left_paddle2 = move_up(left_paddle2)
         elif leftMovingDown and not leftMovingUp:
             left_paddle = move_down(left_paddle)
-            left_paddle2 = move_down(left_paddle2)
         if rightMovingUp and not rightMovingDown:
             right_paddle = move_up(right_paddle)
-            right_paddle2 = move_up(right_paddle2)
         elif rightMovingDown and not rightMovingUp:
             right_paddle = move_down(right_paddle)
-            right_paddle2 = move_down(right_paddle2)
+    left_paddle2.y = left_paddle.y
+    right_paddle2.y = right_paddle.y
     if gameStarted and not ballSpawning:
         if ball.colliderect(left_paddle):
             ball = paddle_collision(ball, left_paddle)
@@ -351,8 +347,8 @@ right_paddle = pygame.Rect(rightx, righty, paddle_width, paddle_height)
 right_paddle2 = pygame.Rect(320, righty, paddle_width, paddle_height)
 
 
-left_points = 9
-right_points = 9
+left_points = 0
+right_points = 0
 ballTimer = 0
 dt = 0
 game = 1
