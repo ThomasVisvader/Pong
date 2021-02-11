@@ -136,17 +136,15 @@ def ball_movement(ball):
                     wall_hit_sound.play()
                     ball.right = 625
                     leftMoving = True
+                    pygame.mouse.set_pos([width / 2, left_paddle.y])
                 elif 625 <= ball.left <= 655:
                     wall_hit_sound.play()
                     ball.left = 655
                     leftMoving = False
+                    pygame.mouse.set_pos([width / 2, right_paddle.y])
             elif 633 <= ball.centerx <= 647:
                 vy = abs(vy)
                 wall_hit_sound.play()
-                # if vx > 0:
-                #     ball.left = 655
-                # else:
-                #     ball.right = 625
         if ball.right >= 1140 or ball.left <= 140:
             if not scoreSound:
                 score_sound.play()
@@ -526,19 +524,19 @@ ball_speed = 15.0
 # 0-court, 1-background, 2-net/ball, 3-score, 4-left goal, 5-right goal, 6-paddles, 7-alt paddles, 8-alt ball, 9-walls
 
 color_list = [[(129, 102, 0), (45, 97, 121), (203, 173, 35), (199, 180, 198), (61, 211, 0), (138, 18, 66),
-               (163, 192, 68), (72, 92, 72), (77, 129, 160), (215, 175, 59)],
+               (163, 192, 68), (45, 97, 121), (77, 129, 160), (215, 175, 59)],
               [(129, 102, 0), (45, 97, 121), (203, 173, 35), (199, 180, 198), (61, 211, 0), (138, 18, 66),
-               (163, 192, 68), (72, 92, 72), (77, 129, 160), (215, 175, 59)],
+               (163, 192, 68), (45, 97, 121), (77, 129, 160), (215, 175, 59)],
               [(24, 182, 44), (127, 110, 107), (94, 240, 109), (174, 251, 255), (75, 86, 95), (81, 188, 41),
-               (255, 159, 255), (156, 89, 128), (187, 164, 181), (152, 255, 141)],
+               (255, 159, 255), (127, 110, 107), (187, 164, 181), (152, 255, 141)],
               [(24, 182, 44), (127, 110, 107), (94, 240, 109), (174, 251, 255), (75, 86, 95), (81, 188, 41),
-               (255, 159, 255), (156, 89, 128), (187, 164, 181), (152, 255, 141)],
+               (255, 159, 255), (127, 110, 107), (187, 164, 181), (152, 255, 141)],
               [(161, 61, 236), (25, 181, 55), (211, 101, 255), (237, 253, 132), (132, 104, 106), (64, 140, 175),
-               (188, 199, 255), (79, 125, 174), (89, 239, 113), (231, 155, 255)],
+               (188, 199, 255), (25, 181, 55), (89, 239, 113), (231, 155, 255)],
               [(161, 61, 236), (25, 181, 55), (211, 101, 255), (237, 253, 132), (132, 104, 106), (64, 140, 175),
-               (188, 199, 255), (79, 125, 174), (89, 239, 113), (231, 155, 255)],
-              [(0, 0, 0), (0, 0, 0), (255, 255, 255), (255, 255, 255), (0, 0, 0), (0, 0, 0), (255, 255, 255),
-               (0, 0, 0), (0, 0, 0), (255, 255, 255)]]
+               (188, 199, 255), (25, 181, 55), (89, 239, 113), (231, 155, 255)],
+              [(0, 0, 0), (0, 0, 0), (255, 255, 255), (138, 255, 161), (0, 0, 0), (0, 0, 0), (155, 140, 255),
+               (0, 0, 0), (255, 255, 255), (255, 255, 255)]]
 
 topWall = pygame.Rect(0, 0, width, 12)
 bottomWall = pygame.Rect(0, height-12, width, 12)
@@ -613,9 +611,10 @@ while True:
             draw_volleyball_net()
         pygame.draw.rect(display, color_list[game-1][6], left_paddle)
         pygame.draw.rect(display, color_list[game-1][6], right_paddle)
-        if doubles:
-            pygame.draw.rect(display, color_list[game - 1][6], left_paddle2)
-            pygame.draw.rect(display, color_list[game - 1][6], right_paddle2)
+        doubles_check()
+        # if doubles:
+        #     pygame.draw.rect(display, color_list[game - 1][6], left_paddle2)
+        #     pygame.draw.rect(display, color_list[game - 1][6], right_paddle2)
         scoreTimer = time.time() - blinkTime
         for event in pygame.event.get():
             if event.type == KEYUP:
