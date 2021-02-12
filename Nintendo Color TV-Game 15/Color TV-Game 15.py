@@ -218,8 +218,9 @@ def draw_walls():
     if game != 7:
         pygame.draw.rect(screen, (255, 255, 255), (0, 0, width, 20))
         color_walls(color_list[game-1][9])
-    pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, 2))
-    pygame.draw.rect(screen, (0, 0, 0), (0, height - 2, width, 2))
+    if game != 8:
+        pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, 2))
+        pygame.draw.rect(screen, (0, 0, 0), (0, height - 2, width, 2))
 
 
 def draw_goals():
@@ -347,7 +348,10 @@ def new_game(type):
         leftMoving = True
     else:
         leftMoving = False
-    ball.center = (ballx, bally)
+    if game != 8:
+        ball.center = (ballx, bally)
+    else:
+        ball.center = left_paddle.center
     left_points = 0
     right_points = 0
     ballTimer = 0
@@ -375,15 +379,16 @@ def pong():
             right_paddle = move_down(right_paddle)
     left_paddle2.y = left_paddle.y
     right_paddle2.y = right_paddle.y
-    if gameStarted and not ballSpawning and ball.colliderect(left_paddle):
-        ball = paddle_collision(ball, left_paddle, 2)
-    elif gameStarted and not ballSpawning and ball.colliderect(right_paddle):
-        ball = paddle_collision(ball, right_paddle, 2)
-    if doubles:
-        if gameStarted and not ballSpawning and ball.colliderect(left_paddle2):
-            ball = paddle_collision(ball, left_paddle2, 2)
-        elif gameStarted and not ballSpawning and ball.colliderect(right_paddle2):
-            ball = paddle_collision(ball, right_paddle2, 2)
+    if game != 8:
+        if gameStarted and not ballSpawning and ball.colliderect(left_paddle):
+            ball = paddle_collision(ball, left_paddle, 2)
+        elif gameStarted and not ballSpawning and ball.colliderect(right_paddle):
+            ball = paddle_collision(ball, right_paddle, 2)
+        if doubles:
+            if gameStarted and not ballSpawning and ball.colliderect(left_paddle2):
+                ball = paddle_collision(ball, left_paddle2, 2)
+            elif gameStarted and not ballSpawning and ball.colliderect(right_paddle2):
+                ball = paddle_collision(ball, right_paddle2, 2)
     if game == 5 and (ball.right >= 410 or ball.left <= 555):
         for i in range(2):
             for j in range(12):
@@ -402,8 +407,13 @@ def pong():
 
 
 def doubles_check():
+    global shootingTimerOn, shootingTimerOff, shootingBlink
     pygame.draw.rect(display, color_list[game - 1][6], left_paddle)
-    pygame.draw.rect(display, color_list[game - 1][6], right_paddle)
+    if game != 8 or (game == 8 and time.time() - shootingTimerOn <= 0.433 and not shootingBlink):
+        pygame.draw.rect(display, color_list[game - 1][6], right_paddle)
+    elif not shootingBlink:
+        shootingBlink = True
+        shootingTimerOff = time.time()
     if doubles:
         pygame.draw.rect(display, color_list[game - 1][6], left_paddle2)
         pygame.draw.rect(display, color_list[game - 1][6], right_paddle2)
@@ -490,6 +500,42 @@ def ping_pong():
     doubles_check()
 
 
+def shooting_game():
+    global leftMoving, ball, ballMoving, right_points, color_list, right_paddle, shootingTimerOn, shootingTimerOff, \
+        shootingBlink
+    right_paddle.y += 11
+    if right_paddle.bottom >= 1005:
+        right_paddle.bottom = 65
+    pong()
+    leftMoving = True
+    if ball.right >= 1280 or ball.top <= ball.height or ball.bottom >= 960:
+        left_score()
+        ballMoving = False
+        ball.center = left_paddle.center
+        color_list[7][0] = (10, 120, 172)
+        color_list[7][1] = (10, 120, 172)
+        color_list[7][2] = (90, 208, 255)
+        color_list[7][6] = (243, 214, 107)
+        color_list[7][7] = (10, 120, 172)
+        color_list[7][8] = (90, 208, 255)
+    if ball.colliderect(right_paddle) and not shootingBlink:
+        score_sound.play()
+        ball.left = right_paddle.right
+        right_points += 1
+        color_list[7][0] = (203, 64, 66)
+        color_list[7][1] = (203, 64, 66)
+        color_list[7][2] = (255, 213, 255)
+        color_list[7][6] = (255, 213, 255)
+        color_list[7][7] = (203, 64, 66)
+        color_list[7][8] = (255, 213, 255)
+    if shootingBlink and time.time() - shootingTimerOff > 0.1:
+        shootingBlink = False
+        shootingTimerOn = time.time()
+    draw_walls()
+    display.blit(screen, (140, 65))
+    doubles_check()
+
+
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()
 height = 810
@@ -536,7 +582,9 @@ color_list = [[(129, 102, 0), (45, 97, 121), (203, 173, 35), (199, 180, 198), (6
               [(161, 61, 236), (25, 181, 55), (211, 101, 255), (237, 253, 132), (132, 104, 106), (64, 140, 175),
                (188, 199, 255), (25, 181, 55), (89, 239, 113), (231, 155, 255)],
               [(0, 0, 0), (0, 0, 0), (255, 255, 255), (138, 255, 161), (0, 0, 0), (0, 0, 0), (155, 140, 255),
-               (0, 0, 0), (255, 255, 255), (255, 255, 255)]]
+               (0, 0, 0), (255, 255, 255), (255, 255, 255)],
+              [(10, 120, 172), (10, 120, 172), (90, 208, 255), (255, 201, 250), (0, 0, 0), (0, 0, 0), (243, 214, 107),
+               (10, 120, 172), (90, 208, 255), (134, 255, 255)]]
 
 topWall = pygame.Rect(0, 0, width, 12)
 bottomWall = pygame.Rect(0, height-12, width, 12)
@@ -557,6 +605,8 @@ blinkTime = time.time()
 bounceCount = 0
 lastCollision = 0
 collisionSpeed = 0
+shootingTimerOn = 0
+shootingTimerOff = 0
 
 controls = 'Mouse'
 leftMovingUp = False
@@ -571,6 +621,7 @@ doubles = False
 blink = True
 scoreSound = False
 hockeynet = False
+shootingBlink = False
 
 make_score()
 dirchoice = random.choice([0, 1])
@@ -597,7 +648,8 @@ while True:
     lastTime = time.time()
     screen.fill(color_list[game-1][0])
     if not gameStarted:
-        draw_goals()
+        if game != 8:
+            draw_goals()
         if scoreTimer >= (32/60):
             blink = not blink
             blinkTime = time.time()
@@ -612,9 +664,6 @@ while True:
         pygame.draw.rect(display, color_list[game-1][6], left_paddle)
         pygame.draw.rect(display, color_list[game-1][6], right_paddle)
         doubles_check()
-        # if doubles:
-        #     pygame.draw.rect(display, color_list[game - 1][6], left_paddle2)
-        #     pygame.draw.rect(display, color_list[game - 1][6], right_paddle2)
         scoreTimer = time.time() - blinkTime
         for event in pygame.event.get():
             if event.type == KEYUP:
@@ -685,6 +734,13 @@ while True:
                 left_paddle2.x = left_paddle.x + 285
                 right_paddle2.x = right_paddle.x - 285
                 make_score()
+            elif event.type == KEYUP and event.key == K_KP8:
+                game = 8
+                shootingTimerOn = time.time()
+                ball.center = left_paddle.center
+                left_paddle2.x = left_paddle.x + 285
+                right_paddle2.x = right_paddle.x - 285
+                make_score()
             elif event.type == KEYUP and event.key == K_LALT:
                 if ball_speed == 15.0:
                     ball_speed = 25.0
@@ -692,6 +748,11 @@ while True:
                     ball_speed = 15.0
             elif event.type == KEYUP and event.key == K_TAB:
                 doubles = not doubles
+            elif event.type == KEYUP and event.key == K_x and not ballMoving and 95 < left_paddle.centery < 845:
+                ball.center = left_paddle.center
+                ballMoving = True
+                vx = ball_speed
+                vy = 0
             elif event.type == KEYUP and event.key == K_LCTRL:
                 if left_paddle.height == 130:
                     left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1] + 65, paddle_width, 65)
@@ -735,7 +796,7 @@ while True:
                         rightMovingUp = True
                     elif event.key == K_DOWN:
                         rightMovingDown = True
-        if not ballMoving and ballTimer >= (130/60):
+        if not ballMoving and ballTimer >= (130/60) and game != 8:
             ballMoving = True
             ball.y = random.randint(66, height-84)
             if dirchoice == 0:
@@ -771,6 +832,8 @@ while True:
             volleyball_b()
         elif game == 7:
             ping_pong()
+        elif game == 8:
+            shooting_game()
         if not ballMoving:
             ballTimer = time.time() - scoreTime
         else:
