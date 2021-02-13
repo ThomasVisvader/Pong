@@ -239,11 +239,11 @@ def color_walls(rgb):
                 r += 1
             if g % 3 == 0:
                 g += 1
-        elif game == 1 or game == 2:
-            if i % 3 == 0:
-                g += 1
-            if i % 5 == 0:
-                b += 1
+        # elif game == 1 or game == 2:
+        #     if i % 3 == 0:
+        #         g += 1
+        #     if i % 5 == 0:
+        #         b += 1
         elif game == 3 or game == 4:
             if i % 4 == 0:
                 r += 1
@@ -270,9 +270,9 @@ def draw_volleyball_net():
     for i in range(2):
         for j in range(12):
             if i == 0:
-                pygame.draw.rect(display, (204, 75, 73), net[i][j])
+                pygame.draw.rect(display, (200, 68, 88), net[i][j])
             else:
-                pygame.draw.rect(display, (48, 174, 24), net[i][j])
+                pygame.draw.rect(display, (83, 193, 120), net[i][j])
 
 
 def color_change(object, case):
@@ -569,8 +569,8 @@ ball_speed = 15.0
 
 # 0-court, 1-background, 2-net/ball, 3-score, 4-left goal, 5-right goal, 6-paddles, 7-alt paddles, 8-alt ball, 9-walls
 
-color_list = [[(129, 102, 0), (45, 97, 121), (203, 173, 35), (199, 180, 198), (61, 211, 0), (138, 18, 66),
-               (163, 192, 68), (45, 97, 121), (77, 129, 160), (215, 175, 59)],
+color_list = [[(191, 104, 59), (32, 143, 189), (203, 173, 35), (205, 240, 255), (76, 189, 124), (163, 104, 120),
+               (208, 236, 178), (45, 97, 121), (77, 129, 160), (175, 161, 129)],
               [(129, 102, 0), (45, 97, 121), (203, 173, 35), (199, 180, 198), (61, 211, 0), (138, 18, 66),
                (163, 192, 68), (45, 97, 121), (77, 129, 160), (215, 175, 59)],
               [(24, 182, 44), (127, 110, 107), (94, 240, 109), (174, 251, 255), (75, 86, 95), (81, 188, 41),
