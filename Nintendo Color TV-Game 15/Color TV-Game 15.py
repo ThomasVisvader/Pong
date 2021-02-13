@@ -410,13 +410,19 @@ def doubles_check():
     global shootingTimerOn, shootingTimerOff, shootingBlink
     pygame.draw.rect(display, color_list[game - 1][6], left_paddle)
     if game != 8 or (game == 8 and time.time() - shootingTimerOn <= 0.433 and not shootingBlink):
-        pygame.draw.rect(display, color_list[game - 1][6], right_paddle)
+        if game == 3 or game == 4:
+            pygame.draw.rect(display, (213, 232, 124), right_paddle)
+        else:
+            pygame.draw.rect(display, color_list[game - 1][6], right_paddle)
     elif not shootingBlink:
         shootingBlink = True
         shootingTimerOff = time.time()
     if doubles:
         pygame.draw.rect(display, color_list[game - 1][6], left_paddle2)
-        pygame.draw.rect(display, color_list[game - 1][6], right_paddle2)
+        if game == 3 or game == 4:
+            pygame.draw.rect(display, (213, 232, 124), right_paddle2)
+        else:
+            pygame.draw.rect(display, color_list[game - 1][6], right_paddle2)
     if left_paddle.top <= 65:
         color_change(left_paddle, 1)
         if doubles:
@@ -512,12 +518,12 @@ def shooting_game():
         left_score()
         ballMoving = False
         ball.center = left_paddle.center
-        color_list[7][0] = (10, 120, 172)
-        color_list[7][1] = (10, 120, 172)
-        color_list[7][2] = (90, 208, 255)
+        color_list[7][0] = (70, 167, 154)
+        color_list[7][1] = (70, 167, 154)
+        color_list[7][2] = (141, 218, 222)
         color_list[7][6] = (243, 214, 107)
-        color_list[7][7] = (10, 120, 172)
-        color_list[7][8] = (90, 208, 255)
+        color_list[7][7] = (70, 167, 154)
+        color_list[7][8] = (141, 218, 222)
     if ball.colliderect(right_paddle) and not shootingBlink:
         score_sound.play()
         ball.left = right_paddle.right
@@ -541,7 +547,7 @@ ctypes.windll.user32.SetProcessDPIAware()
 height = 810
 width = 1000
 display = pygame.display.set_mode((1280, 960))
-display.fill((45, 97, 121))
+display.fill((14, 122, 171))
 screen = pygame.Surface((width, height))
 score_screen = pygame.Surface((900, 255))
 handball_screen = pygame.Surface((width, 255))
@@ -569,22 +575,22 @@ ball_speed = 15.0
 
 # 0-court, 1-background, 2-net/ball, 3-score, 4-left goal, 5-right goal, 6-paddles, 7-alt paddles, 8-alt ball, 9-walls
 
-color_list = [[(191, 104, 59), (32, 143, 189), (203, 173, 35), (205, 240, 255), (76, 189, 124), (163, 104, 120),
-               (208, 236, 178), (45, 97, 121), (77, 129, 160), (175, 161, 129)],
-              [(129, 102, 0), (45, 97, 121), (203, 173, 35), (199, 180, 198), (61, 211, 0), (138, 18, 66),
-               (163, 192, 68), (45, 97, 121), (77, 129, 160), (215, 175, 59)],
-              [(24, 182, 44), (127, 110, 107), (94, 240, 109), (174, 251, 255), (75, 86, 95), (81, 188, 41),
-               (255, 159, 255), (127, 110, 107), (187, 164, 181), (152, 255, 141)],
-              [(24, 182, 44), (127, 110, 107), (94, 240, 109), (174, 251, 255), (75, 86, 95), (81, 188, 41),
-               (255, 159, 255), (127, 110, 107), (187, 164, 181), (152, 255, 141)],
-              [(161, 61, 236), (25, 181, 55), (211, 101, 255), (237, 253, 132), (132, 104, 106), (64, 140, 175),
-               (188, 199, 255), (25, 181, 55), (89, 239, 113), (231, 155, 255)],
-              [(161, 61, 236), (25, 181, 55), (211, 101, 255), (237, 253, 132), (132, 104, 106), (64, 140, 175),
-               (188, 199, 255), (25, 181, 55), (89, 239, 113), (231, 155, 255)],
+color_list = [[(192, 118, 69), (14, 122, 171), (250, 231, 180), (205, 240, 255), (76, 189, 124), (163, 104, 120),
+               (208, 236, 178), (14, 122, 171), (83, 210, 255), (218, 210, 176)],
+              [(192, 118, 69), (14, 122, 171), (250, 231, 180), (205, 240, 255), (76, 189, 124), (163, 104, 120),
+               (208, 236, 178), (14, 122, 171), (83, 210, 255), (218, 210, 176)],
+              [(44, 201, 76), (80, 80, 104), (152, 255, 141), (174, 251, 255), (58, 104, 127), (81, 188, 41),
+               (255, 159, 255), (80, 80, 104), (160, 152, 172), (152, 255, 141)],
+              [(44, 201, 76), (80, 80, 104), (152, 255, 141), (174, 251, 255), (58, 104, 127), (81, 188, 41),
+               (255, 159, 255), (80, 80, 104), (160, 152, 172), (152, 255, 141)],
+              [(109, 112, 249), (25, 181, 55), (199, 219, 253), (237, 253, 132), (132, 104, 106), (64, 140, 175),
+               (166, 230, 255), (25, 181, 55), (89, 239, 113), (205, 220, 251)],
+              [(109, 112, 249), (25, 181, 55), (199, 219, 253), (237, 253, 132), (132, 104, 106), (64, 140, 175),
+               (166, 230, 255), (25, 181, 55), (89, 239, 113), (205, 220, 251)],
               [(0, 0, 0), (0, 0, 0), (255, 255, 255), (138, 255, 161), (0, 0, 0), (0, 0, 0), (155, 140, 255),
                (0, 0, 0), (255, 255, 255), (255, 255, 255)],
-              [(10, 120, 172), (10, 120, 172), (90, 208, 255), (255, 201, 250), (0, 0, 0), (0, 0, 0), (243, 214, 107),
-               (10, 120, 172), (90, 208, 255), (134, 255, 255)]]
+              [(70, 167, 154), (70, 167, 154), (141, 218, 222), (255, 201, 250), (0, 0, 0), (0, 0, 0), (243, 214, 107),
+               (70, 167, 154), (141, 218, 222), (134, 255, 255)]]
 
 topWall = pygame.Rect(0, 0, width, 12)
 bottomWall = pygame.Rect(0, height-12, width, 12)
