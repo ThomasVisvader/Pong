@@ -129,7 +129,6 @@ def paddle_collision(ball, paddle):
     ball.x += vx * dt
     ball.y += vy * dt
     hit_sound.play()
-    print(volley, ball_speed)
     return ball
 
 
