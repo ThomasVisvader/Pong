@@ -68,8 +68,8 @@ def paddle_collision(ball, paddle):
         direction = 180
     elif 355 <= direction <= 359:
         direction = 0
-    vx = ball_speed * math.cos(math.radians(direction))
-    vy = ball_speed * math.sin(math.radians(direction))
+    vx *= -1
+    vy = math.tan(math.radians(direction)) * vx
     ball.x += vx
     ball.y += vy
     paddle_hit_sound.play()
@@ -78,9 +78,9 @@ def paddle_collision(ball, paddle):
 
 def ball_movement(ball):
     global vx, vy, ballSpawning, game
-    if ball.right >= width:
+    if ball.left >= width:
         left_score()
-    elif ball.left <= 0:
+    elif ball.right <= 0:
         right_score()
     elif ballSpawning and 100 <= ball.centerx <= 1200:
         ballSpawning = False
@@ -335,7 +335,8 @@ righty = height // 2
 ballx = -50
 bally = -50
 paddle_speed = 20.0
-ball_speed = 15.0
+ball_speed = 18.0
+vx = ball_speed
 
 topWall = pygame.Rect(0, 0, width, 12)
 bottomWall = pygame.Rect(0, height-12, width, 12)
@@ -352,6 +353,7 @@ right_points = 0
 ballTimer = 0
 dt = 0
 game = 1
+diff = 1
 
 controls = 'Mouse'
 leftMovingUp = False
@@ -402,21 +404,33 @@ while True:
         elif event.type == KEYUP and event.key == K_KP3:
             game = 3
         elif event.type == KEYUP and event.key == K_1:
-            ball_speed = 15.0
+            diff = 1
+            if vx > 0:
+                vx = 18.0
+            else:
+                vx = -18.0
             paddle_height = 150
             left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle = pygame.Rect(rightx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             left_paddle2 = pygame.Rect(930, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle2 = pygame.Rect(320, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
         elif event.type == KEYUP and event.key == K_2:
-            ball_speed = 15.0
+            diff = 2
+            if vx > 0:
+                vx = 18.0
+            else:
+                vx = -18.0
             paddle_height = 75
             left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle = pygame.Rect(rightx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             left_paddle2 = pygame.Rect(930, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle2 = pygame.Rect(320, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
         elif event.type == KEYUP and event.key == K_3:
-            ball_speed = 29.0
+            diff = 3
+            if vx > 0:
+                vx = 36.0
+            else:
+                vx = -36.0
             paddle_height = 150
             left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
             right_paddle = pygame.Rect(rightx, pygame.mouse.get_pos()[1], paddle_width, paddle_height)
@@ -451,23 +465,28 @@ while True:
                     rightMovingDown = True
     if not ballMoving and ballTimer >= 1:
         ballMoving = True
-        ball.y = random.randint(66, height-84)
+        ball.centery = random.randint(66, height-120)
         if dirchoice == 0:
-            ball.x = width - 35
+            ball.centerx = width - 35
             quadrant = random.choice([2, 3])
             if quadrant == 2:
-                direction = random.randint(91, 180)
+                direction = random.randint(125, 180)
             else:
-                direction = random.randint(186, 269)
+                direction = random.randint(186, 225)
         else:
-            ball.x = 35
+            ball.centerx = 35
             quadrant = random.choice([1, 4])
             if quadrant == 1:
-                direction = random.randint(0, 84)
+                direction = random.randint(0, 45)
             else:
-                direction = random.randint(276, 354)
-        vx = ball_speed * math.cos(math.radians(direction))
-        vy = ball_speed * math.sin(math.radians(direction))
+                direction = random.randint(315, 354)
+        if diff == 3:
+            vx = 36.0
+        else:
+            vx = 18.0
+        if dirchoice == 0:
+            vx *= -1
+        vy = math.tan(math.radians(direction)) * vx
         ballTimer = 0
     if ballMoving:
         ball = ball_movement(ball)

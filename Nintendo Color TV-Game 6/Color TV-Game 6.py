@@ -90,8 +90,8 @@ def paddle_collision(ball, paddle, color):
         direction = 180
     elif 355 <= direction <= 359:
         direction = 0
-    vx = ball_speed * math.cos(math.radians(direction))
-    vy = ball_speed * math.sin(math.radians(direction))
+    vx *= -1
+    vy = math.tan(math.radians(direction)) * vx
     paddle_hit_sound.play()
     return ball
 
@@ -421,7 +421,8 @@ righty = height // 2
 ballx = -50
 bally = -50
 paddle_speed = 11.0
-ball_speed = 15.0
+ball_speed = 11.5
+vx = ball_speed
 
 # 0-court, 1-background, 2-net/ball, 3-score, 4-left goal, 5-right goal, 6-paddles, 7-alt paddles, 8-alt ball, 9-walls
 
@@ -554,11 +555,19 @@ while True:
                 left_paddle2.x = right_paddle.x - 285
                 right_paddle2.x = left_paddle.x + 285
                 make_score()
-            elif event.type == KEYUP and event.key == K_LALT:
-                if ball_speed == 15.0:
-                    ball_speed = 25.0
-                else:
-                    ball_speed = 15.0
+            elif event.type == KEYUP and event.key == K_LALT and ballMoving:
+                if vx == 11.5:
+                    ball_speed = 23.0
+                    vx = 23.0
+                elif vx == -11.5:
+                    ball_speed = 23.0
+                    vx = -23.0
+                elif vx == 23.0:
+                    ball_speed = 11.5
+                    vx = 11.5
+                elif vx == -23.0:
+                    ball_speed = 11.5
+                    vx = -11.5
             elif event.type == KEYUP and event.key == K_TAB:
                 doubles = not doubles
             elif event.type == KEYUP and event.key == K_LCTRL:
@@ -611,18 +620,20 @@ while True:
                 ball.x = rightx
                 quadrant = random.choice([2, 3])
                 if quadrant == 2:
-                    direction = random.randint(91, 180)
+                    direction = random.randint(125, 180)
                 else:
-                    direction = random.randint(186, 269)
+                    direction = random.randint(186, 225)
             else:
                 ball.x = leftx
                 quadrant = random.choice([1, 4])
                 if quadrant == 1:
-                    direction = random.randint(0, 84)
+                    direction = random.randint(0, 45)
                 else:
-                    direction = random.randint(276, 354)
-            vx = ball_speed * math.cos(math.radians(direction))
-            vy = ball_speed * math.sin(math.radians(direction))
+                    direction = random.randint(315, 354)
+            vx = ball_speed
+            if dirchoice == 0:
+                vx *= -1
+            vy = math.tan(math.radians(direction)) * vx
             ballTimer = 0
         if ballMoving:
             ball = ball_movement(ball)
@@ -640,5 +651,6 @@ while True:
                 color_change(ball, 3)
             elif ball.right >= 1140:
                 color_change(ball, 4)
+    print(vx)
     pygame.display.update()
     fpsClock.tick(FPS)

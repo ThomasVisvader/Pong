@@ -10,27 +10,30 @@ from pygame.locals import *
 
 
 def left_score():
-    global left_points, ballMoving, ball_speed, dirchoice, scored, leftMoving
+    global left_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, volley
     left_points += 1
     ballMoving = False
-    ball_speed = 10.0
+    ball_speed = 7.5
+    volley = 1
     ball.center = (width + 50, 300)
     scored = True
     score_sound.play()
 
 
 def right_score():
-    global right_points, ballMoving, ball_speed, dirchoice, scored, leftMoving
+    global right_points, ballMoving, ball_speed, dirchoice, scored, leftMoving, volley
     right_points += 1
     ballMoving = False
-    ball_speed = 10.0
+    ball_speed = 7.5
+    volley = 1
     ball.center = (-50, 300)
     score_sound.play()
     scored = True
 
 
 def paddle_collision(ball, paddle):
-    global vx, vy, ball_speed, direction, leftMoving
+    global vx, vy, ball_speed, direction, leftMoving, volley
+    volley += 1
     if game == 1:
         if paddle == left_paddle_up or paddle == left_paddle_down:
             if paddle == left_paddle_up:
@@ -48,6 +51,18 @@ def paddle_collision(ball, paddle):
             ball.right = paddle.left
             leftMoving = True
             pygame.mouse.set_pos([width / 2, left_paddle.y])
+        if 5 <= volley <= 8:
+            if paddle == left_paddle_up or paddle == left_paddle_down:
+                vx = -15.0
+            else:
+                vx = 15.0
+            ball_speed = 15.0
+        elif volley >= 9:
+            if paddle == left_paddle_up or paddle == left_paddle_down:
+                vx = -22.5
+            else:
+                vx = 22.5
+            ball_speed = 22.5
     else:
         if game == 2:
             tmp = ball.center[1] - paddle.top
@@ -64,14 +79,23 @@ def paddle_collision(ball, paddle):
         elif c_point > 1:
             ball.top = paddle.bottom
             c_point = 1
-        volley = ball_speed - 9.0
         if 1 <= volley <= 4:
             alpha = 30
             inc = 15
         elif 5 <= volley <= 8:
+            if paddle == left_paddle or paddle == left_paddle2:
+                vx = -15.0
+            else:
+                vx = 15.0
+            ball_speed = 15.0
             alpha = 25
             inc = 10
         else:
+            if paddle == left_paddle or paddle == left_paddle2:
+                vx = -22.5
+            else:
+                vx = 22.5
+            ball_speed = 22.5
             alpha = 10
             inc = 10
         if paddle == left_paddle or paddle == left_paddle2:
@@ -100,13 +124,12 @@ def paddle_collision(ball, paddle):
             direction = straight + alpha + inc
         elif 0.75 < c_point <= 1:
             direction = straight + alpha + (2 * inc)
-    if ball_speed < 22.0:
-        ball_speed += 1
-    vx = ball_speed * math.cos(math.radians(direction))
-    vy = ball_speed * math.sin(math.radians(direction))
+    vx *= -1
+    vy = math.tan(math.radians(direction)) * vx
     ball.x += vx * dt
     ball.y += vy * dt
     hit_sound.play()
+    print(volley, ball_speed)
     return ball
 
 
@@ -367,13 +390,15 @@ def get_pixel_color(x):
 def new_game(type):
     screen.fill((0, 0, 0))
     global left_points, right_points, leftMovingUp, leftMovingDown, rightMovingUp, rightMovingDown, \
-        gameStarted, ball, ballTimer, ballMoving, leftMoving, dirchoice, introTimer
+        gameStarted, ball, ballTimer, ballMoving, leftMoving, dirchoice, introTimer, ball_speed, volley
     if type == 0:
         gameStarted = False
     ball.center = (ballx, bally)
     left_points = 0
     right_points = 0
     ballTimer = 0
+    ball_speed = 7.5
+    volley = 1
     leftMovingUp = False
     leftMovingDown = False
     rightMovingUp = False
@@ -588,8 +613,9 @@ righty = height // 2 - 15
 ballx = width // 2 - 5
 bally = height // 2 + 5
 paddle_speed = 20.0
-ball_speed = 10.0
+ball_speed = 7.5
 yspeed = 0
+volley = 1
 
 topWall = pygame.Rect(0, 0, width, 65)
 bottomWall = pygame.Rect(0, height-65, width, 65)
@@ -769,17 +795,19 @@ while True:
             if dirchoice == 0:
                 quadrant = random.choice([2, 3])
                 if quadrant == 2:
-                    direction = random.randint(91, 180)
+                    direction = random.randint(125, 180)
                 else:
-                    direction = random.randint(186, 269)
+                    direction = random.randint(186, 225)
             else:
                 quadrant = random.choice([1, 4])
                 if quadrant == 1:
-                    direction = random.randint(0, 84)
+                    direction = random.randint(0, 45)
                 else:
-                    direction = random.randint(276, 354)
-            vx = ball_speed * math.cos(math.radians(direction))
-            vy = ball_speed * math.sin(math.radians(direction))
+                    direction = random.randint(315, 354)
+            vx = ball_speed
+            if dirchoice == 0:
+                vx *= -1
+            vy = math.tan(math.radians(direction)) * vx
             spawn_sound.play()
             ballTimer = 0
         if ballMoving:
