@@ -28,8 +28,8 @@ Player 2 - <UP> = move up
 
 How to play:
 
-Use the Numkeys to select a game mode. By default, the console launches with a light show
-on Game 1. Start the game by pressing <Space>
+Start the game by pressing <Space>. Use the Numkeys to select a game mode. The game mode can only be
+selected when the game is started. By default, the console launches with a light show on Game 1. 
 
 Game 1 - Catch:
 Move your hole up or down and catch the ball through your hole. The ball never goes out of

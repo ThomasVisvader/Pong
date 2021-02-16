@@ -555,7 +555,7 @@ while True:
                 left_paddle2.x = right_paddle.x - 285
                 right_paddle2.x = left_paddle.x + 285
                 make_score()
-            elif event.type == KEYUP and event.key == K_LALT and ballMoving:
+            elif event.type == KEYUP and event.key == K_3:
                 if vx == 11.5:
                     ball_speed = 23.0
                     vx = 23.0
@@ -568,9 +568,9 @@ while True:
                 elif vx == -23.0:
                     ball_speed = 11.5
                     vx = -11.5
-            elif event.type == KEYUP and event.key == K_TAB:
+            elif event.type == KEYUP and event.key == K_4:
                 doubles = not doubles
-            elif event.type == KEYUP and event.key == K_LCTRL:
+            elif event.type == KEYUP and event.key == K_1:
                 if left_paddle.height == 130:
                     left_paddle = pygame.Rect(leftx, pygame.mouse.get_pos()[1] + 65, paddle_width, 65)
                 else:
@@ -578,7 +578,7 @@ while True:
                 left_paddle2.height = left_paddle.height
                 if controls == 'Mouse':
                     pygame.mouse.set_pos([width / 2, left_paddle.y])
-            elif event.type == KEYUP and event.key == K_RCTRL:
+            elif event.type == KEYUP and event.key == K_2:
                 if right_paddle.height == 130:
                     right_paddle = pygame.Rect(rightx, pygame.mouse.get_pos()[1] + 65, paddle_width, 65)
                 else:
@@ -651,6 +651,5 @@ while True:
                 color_change(ball, 3)
             elif ball.right >= 1140:
                 color_change(ball, 4)
-    print(vx)
     pygame.display.update()
     fpsClock.tick(FPS)
