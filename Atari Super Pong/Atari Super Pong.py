@@ -1,4 +1,5 @@
 import sys
+import os
 import pygame.freetype
 import pygame
 import random
@@ -587,7 +588,8 @@ def pong():
 
 
 pygame.init()
-ctypes.windll.user32.SetProcessDPIAware()
+if os.name == 'nt':
+    ctypes.windll.user32.SetProcessDPIAware()
 height = 960
 width = 1280
 screen = pygame.display.set_mode((width, height))
