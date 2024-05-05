@@ -1,4 +1,5 @@
 import sys
+import os
 import pygame.freetype
 import pygame
 import random
@@ -393,7 +394,8 @@ def volleyball():
 
 
 pygame.init()
-ctypes.windll.user32.SetProcessDPIAware()
+if os.name == 'nt':
+    ctypes.windll.user32.SetProcessDPIAware()
 height = 810
 width = 1000
 display = pygame.display.set_mode((1280, 960))
